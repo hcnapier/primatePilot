@@ -4,3 +4,6 @@
 .httr-oauth
 .DS_Store
 .quarto
+
+# ignore everything in data directory
+data/*
