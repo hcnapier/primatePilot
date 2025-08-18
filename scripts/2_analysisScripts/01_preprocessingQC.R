@@ -8,11 +8,11 @@
 library(Seurat)
 library(patchwork)
 library(dplyr)
+library(deMULTIplex)
 
 ## 0.2 Source functions ----
 setwd("~/Work/VertGenLab/Projects/zebrinEvolution/Code/primatePilot/functions")
 source("addHTOAssay.R")
-source("addOne.R")
 
 ## 0.3 Read data ----
 setwd("~/Work/VertGenLab/Projects/zebrinEvolution/Code/primatePilot/data/countMats")
@@ -25,20 +25,28 @@ speciesList <- list()
 for(currSpecies in speciesNames){
   speciesList[[currSpecies]] <- CreateSeuratObject(counts = speciesCountMatList_gex[[currSpecies]]) # set up GEX Seurat object
   speciesList[[currSpecies]] <- addHTOAssay(obj = speciesList[[currSpecies]], htoMat = speciesCountMatList_hto[[currSpecies]])
-  #hto <- GetAssayData(speciesList[[currSpecies]], assay="HTO") 
-  #hto <- hto + 1
-  #tempObj <- speciesList[[currSpecies]]
-  #tempObj[["HTO"]] <- CreateAssayObject(counts = hto)
-  #speciesList[[currSpecies]] <- tempObj
 }
 rm(speciesCountMatList_gex)
 rm(speciesCountMatList_hto)
 
 
 # 2.0 Demultiplex HTOs ----
-testHTO <- HTODemux(speciesList[["mouse"]])
-test <- MULTIseqDemux(speciesList[["human"]], autoThresh = F, quantile = 0.7)
-plot(test$MULTI_ID)
+## 2.1 Try HTODemux ---- 
+testObj <- speciesList[["mouse"]]
+testHTO <- HTODemux(testObj, positive.quantile = 0.99)
+table(testHTO$HTO_classification)
+table(testHTO$HTO_classification.global)
+#Idents(testObj) <- "HTO_maxID"
+#RidgePlot(testObj, assay = "HTO", features = rownames(testObj[["HTO"]])[1:2], ncol = 2)
+
+## 2.2 Try MULTISeqDemux ----
+testMultiSeq <- MULTIseqDemux(speciesList[["mouse"]], autoThresh = T, quantile = .14)
+table(testMultiSeq$MULTI_ID)
+plot(testMultiSeq$MULTI_ID)
+
+## 2.3 Try deMULTIplex
+testObj <- speciesList[["mouse"]]
+bar.tsne <- barTSNE(testObj[['HTO']]$counts[,1:8])
 
 
 # 2.0 GEX QC ----
