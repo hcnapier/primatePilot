@@ -7,20 +7,38 @@
 ## 0.1 Load packages -----
 library(Seurat)
 library(patchwork)
+library(dplyr)
 
-## 0.2 Read data ----
+## 0.2 Source functions ----
+setwd("~/Work/VertGenLab/Projects/zebrinEvolution/Code/primatePilot/functions")
+source("addHTOAssay.R")
+source("addOne.R")
+
+## 0.3 Read data ----
 setwd("~/Work/VertGenLab/Projects/zebrinEvolution/Code/primatePilot/data/countMats")
 speciesCountMatList_gex <- readRDS("allSpeciesCountMatList_GEX.rds")
 speciesCountMatList_hto <- readRDS("allSpeciesCountMatList_HTO.rds")
 speciesNames <- c("human", "rhesus", "mouse")
 
-
-# 1.0 Setup GEX Seurat Object ----
+# 1.0 Setup Seurat Object ----
 speciesList <- list()
 for(currSpecies in speciesNames){
-  speciesList[[currSpecies]] <- CreateSeuratObject(counts = speciesCountMatList_gex[[currSpecies]])
+  speciesList[[currSpecies]] <- CreateSeuratObject(counts = speciesCountMatList_gex[[currSpecies]]) # set up GEX Seurat object
+  speciesList[[currSpecies]] <- addHTOAssay(obj = speciesList[[currSpecies]], htoMat = speciesCountMatList_hto[[currSpecies]])
+  #hto <- GetAssayData(speciesList[[currSpecies]], assay="HTO") 
+  #hto <- hto + 1
+  #tempObj <- speciesList[[currSpecies]]
+  #tempObj[["HTO"]] <- CreateAssayObject(counts = hto)
+  #speciesList[[currSpecies]] <- tempObj
 }
 rm(speciesCountMatList_gex)
+rm(speciesCountMatList_hto)
+
+
+# 2.0 Demultiplex HTOs ----
+testHTO <- HTODemux(speciesList[["mouse"]])
+test <- MULTIseqDemux(speciesList[["human"]], autoThresh = F, quantile = 0.7)
+plot(test$MULTI_ID)
 
 
 # 2.0 GEX QC ----
@@ -52,6 +70,8 @@ for(currSpecies in speciesNames){
   speciesCountMatList_hto[[currSpecies]] <- speciesCountMatList_hto[[currSpecies]][ ,filtCellList]
 }
 
+
+# 4.0 Find and scale variable GEX features ----
 
 
 # 3.0 Setup & Normalize Seurat Object ----
