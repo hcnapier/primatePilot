@@ -32,7 +32,6 @@ for(currSpecies in speciesNames){
 # 3.0 Filter out unused HTOs ----
 speciesCountMatList_htoFilt <- lapply(speciesCountMatList_hto, removeZeroRowsCols)
 
-
 # 4.0 Save filtered count matrices ----
 setwd("~/Work/VertGenLab/Projects/zebrinEvolution/Code/primatePilot/data/countMats")
 saveRDS(speciesCountMatList_gex, "allSpeciesCountMatList_GEX.rds")
