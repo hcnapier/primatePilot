@@ -7,8 +7,6 @@
 require(Seurat)
 
 addHTOAssay <- function(obj, htoMat){
-  #htoMat <- htoMat + 1
-  
   obj[["HTO"]] <- CreateAssayObject(counts = htoMat) # add in HTO library
   obj <- NormalizeData(obj, assay = "HTO", normalization.method = "CLR") # normalize HTO library using centered log-ratio transformation
   return (obj)
