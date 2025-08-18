@@ -6,18 +6,19 @@
 # 0.0 Setup ----
 ## 0.1 Load packages ----
 library(Seurat)
+## 0.2 Source functions ----
+setwd("~/Work/VertGenLab/Projects/zebrinEvolution/Code/primatePilot/functions")
+source("removeZeroRowsCols.R")
 
 # 1.0 Read in count matrices ----
 speciesNames <- c("human", "rhesus", "mouse")
 speciesCountMatList_hto <- list()
 speciesCountMatList_gex <- list()
-setwd("/Users/haileynapier/Work/VertGenLab/Projects/zebrinEvolution/Data/20250423_PrimatePilot/cellrangerOuts")
+setwd("/Users/haileynapier/Work/VertGenLab/Projects/zebrinEvolution/Data/sequencingData/20250423_PrimatePilot/pipseekerOuts/filteredMatrix")
 for(currSpecies in speciesNames){
-  filename <- paste(currSpecies, "filtered_feature_bc_matrix.h5", sep = "_")
-  print(filename)
-  tmp <- Read10X_h5(filename)
+  tmp <- Read10X(currSpecies)
   speciesCountMatList_gex[[currSpecies]] <- tmp$`Gene Expression`
-  speciesCountMatList_hto[[currSpecies]] <- tmp$`Antibody Capture`
+  speciesCountMatList_hto[[currSpecies]] <- tmp$`Cell Hashing`
   rm(tmp)
 }
 
@@ -28,7 +29,11 @@ for(currSpecies in speciesNames){
   speciesCountMatList_hto[[currSpecies]] <- speciesCountMatList_hto[[currSpecies]][ ,joint]
 }
 
-# 3.0 Save filtered count matrices ----
+# 3.0 Filter out unused HTOs ----
+speciesCountMatList_htoFilt <- lapply(speciesCountMatList_hto, removeZeroRowsCols)
+
+
+# 4.0 Save filtered count matrices ----
 setwd("~/Work/VertGenLab/Projects/zebrinEvolution/Code/primatePilot/data/countMats")
 saveRDS(speciesCountMatList_gex, "allSpeciesCountMatList_GEX.rds")
-saveRDS(speciesCountMatList_hto, "allSpeciesCountMatList_HTO.rds")
+saveRDS(speciesCountMatList_htoFilt, "allSpeciesCountMatList_HTO.rds")
