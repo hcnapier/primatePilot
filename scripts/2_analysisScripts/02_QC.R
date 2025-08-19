@@ -40,12 +40,20 @@ FeatureScatter(speciesList[['rhesus']], feature1 = "nCount_RNA", feature2 = "nFe
 ## 1.4 Filter out the cells with low numbers of unique features ----
 speciesList_filt <- list()
 for(currSpecies in speciesNames){
-  speciesList_filt[[currSpecies]] <- subset(speciesList[[currSpecies]], subset = nFeature_RNA > 200 & nFeature_RNA < 9000)
+  speciesList_filt[[currSpecies]] <- subset(speciesList[[currSpecies]], subset = nFeature_RNA > 200 & nFeature_RNA < 8000)
 }
 ### Plot filtered objects ----
 VlnPlot(speciesList_filt[['human']], features = c("nFeature_RNA", "nCount_RNA"), ncol = 2, alpha = 0.1)
 VlnPlot(speciesList_filt[['mouse']], features = c("nFeature_RNA", "nCount_RNA"), ncol = 2, alpha = 0.1)
 VlnPlot(speciesList_filt[['rhesus']], features = c("nFeature_RNA", "nCount_RNA"), ncol = 2, alpha = 0.1)
+## HTO
+Idents(speciesList[["human"]]) <- "MULTI_ID"
+VlnPlot(speciesList[['human']], features = c("nFeature_RNA", "nCount_RNA"), ncol = 2, alpha = 0.1)
+Idents(speciesList[["mouse"]]) <- "MULTI_ID"
+VlnPlot(speciesList[['mouse']], features = c("nFeature_RNA", "nCount_RNA"), ncol = 2, alpha = 0.1)
+Idents(speciesList[["rhesus"]]) <- "MULTI_ID"
+VlnPlot(speciesList[['rhesus']], features = c("nFeature_RNA", "nCount_RNA"), ncol = 2, alpha = 0.1)
+
 ### How many cells remain?
 ncol(speciesList_filt[['human']])
 ncol(speciesList_filt[['mouse']])
