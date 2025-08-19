@@ -15,3 +15,7 @@ if (!require("BiocManager", quietly = TRUE))
 BiocManager::install("ShortRead")
 devtools::install_github('chris-mcginnis-ucsf/MULTI-seq')
 
+# normalization
+if (!require("BiocManager", quietly = TRUE))
+  install.packages("BiocManager")
+BiocManager::install("glmGamPoi")
