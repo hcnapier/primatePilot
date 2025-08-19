@@ -6,9 +6,9 @@
 # 0.0 Setup ----
 ## 0.1 Load packages -----
 library(Seurat)
-library(patchwork)
+#library(patchwork)
 library(dplyr)
-library(deMULTIplex)
+#library(deMULTIplex)
 library(ggplot2)
 
 ## 0.2 Source functions ----
@@ -154,4 +154,4 @@ DimPlot(tmp_subset_rhesus) +
 
 # 5.0 Save objects ----
 setwd("~/Work/VertGenLab/Projects/zebrinEvolution/Code/primatePilot/data/seuratObjs")
-saveRDS(speciesList, "speciesObjList.R")
+saveRDS(speciesList, "speciesObjList.rds")
