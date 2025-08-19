@@ -50,3 +50,8 @@ Idents(speciesList[["rhesus"]]) <- "MULTI_ID"
 DimPlot(speciesList[['human']], label = F)
 DimPlot(speciesList[['mouse']], label = F)
 DimPlot(speciesList[['rhesus']], label = F)
+
+
+# 5.0 Save objects ----
+setwd("~/Work/VertGenLab/Projects/zebrinEvolution/Code/primatePilot/data/seuratObjs")
+saveRDS(speciesList, "speciesObjList_normAndClust.rds")
