@@ -1,5 +1,5 @@
-# 01_preprocessingQC
-# Preprocessing and QC of Seurat objects for analysis
+# 01_htoDemux
+# Demultiplex HTOs
 # Hailey Napier
 # August 4, 2025
 
@@ -150,3 +150,8 @@ tmp_subset_rhesus <- RunPCA(tmp_subset_rhesus, features = rownames(tmp_subset_rh
 tmp_subset_rhesus <- RunTSNE(tmp_subset_rhesus, dims = 1:8, perplexity = 100)
 DimPlot(tmp_subset_rhesus) + 
   labs(title = "Rhesus")
+
+
+# 5.0 Save objects ----
+setwd("~/Work/VertGenLab/Projects/zebrinEvolution/Code/primatePilot/data/seuratObjs")
+saveRDS(speciesList, "speciesObjList.R")
