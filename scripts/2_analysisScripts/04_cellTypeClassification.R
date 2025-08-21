@@ -8,6 +8,7 @@
 library(Seurat)
 library(dplyr)
 library(ggplot2)
+library(ggVennDiagram)
 
 ## 0.2 Load data ----
 setwd("~/Work/VertGenLab/Projects/zebrinEvolution/Code/primatePilot/data/seuratObjs")
@@ -174,35 +175,147 @@ Idents(negSingList[["rhesus"]]) <- "seurat_clusters"
 Idents(negSingList[["mouse"]]) <- "seurat_clusters"
 
 ### Human 1 ----
+Idents(negSingList[["human1"]]) <- "seurat_clusters"
 DimPlot(negSingList[['human1']])
 table(Idents(negSingList[["human1"]]))
-#### PCs ----
-FeaturePlot(negSingList[['human1']], features = c("PCP2", "CALB1", "FOXP2"))
-VlnPlot(negSingList[['human1']], features = c("PCP2", "CALB1", "FOXP2")) # 18 putative PCs (cluster 15)
+#### PCs -- 15
+FeaturePlot(negSingList[['human1']], features = c("PCP2", "CALB1"))
+VlnPlot(negSingList[['human1']], features = c("PCP2", "CALB1")) # 18 putative PCs (cluster 15)
+VlnPlot(negSingList[['human1']], features = c("PCP2", "CALB1", "FOXP2", "EBF1", "CNTNAP4", "ITPR1"))
+#### Astrocytes -- 14
+FeaturePlot(negSingList[['human1']], features = c("GFAP", "SLC4A4", "GABRB1", "SLC1A2"))
+VlnPlot(negSingList[['human1']], features = c("GFAP", "SLC4A4", "GABRB1", "SLC1A2", "LUZP2", "AQP4")) # Cluster 14
+#### Bergmann Glia -- 8
+FeaturePlot(negSingList[['human1']], features = c("SLC4A4", "GABRB1", "SLC1A2","PREX2"))
+VlnPlot(negSingList[['human1']], features = c("SLC4A4", "GABRB1", "SLC1A2","PREX2", "SLC1A3", "PTPRZ1")) 
+##### Granule Neurons -- 3 & 0
+DimPlot(negSingList[['human1']], label = T)
+FeaturePlot(negSingList[['human1']], features = c("CHN2", "TENM1", "CADPS2", "CA10"))
+VlnPlot(negSingList[['human1']], features = c("CHN2", "TENM1", "CADPS2", "CA10", "GRIK2"))
+FindMarkers(negSingList[['human1']], ident.1 = c("3", "0"), ident.2 = NULL)
+#### Golgi Cells -- 7
+FeaturePlot(negSingList[['human1']], features = c("GABRG3", "CACNG3", "ELAVL2", "KCNN3"))
+VlnPlot(negSingList[['human1']], features = c("GABRG3", "CACNG3", "ELAVL2", "KCNN3", "LGI2"))
 
 ### Human 2 ----
 DimPlot(negSingList[['human2']])
 table(Idents(negSingList[["human2"]]))
-#### PCs ----
-FeaturePlot(negSingList[['human2']], features = c("PCP2", "CALB1", "FOXP2"))
-VlnPlot(negSingList[['human2']], features = c("PCP2", "CALB1", "FOXP2")) # 70 putative PCs (cluster 14)
-#### Astrocytes ----
+#### PCs -- 14
+FeaturePlot(negSingList[['human2']], features = c("PCP2", "CALB1"))
+VlnPlot(negSingList[['human2']], features = c("PCP2", "CALB1")) # 70 putative PCs (cluster 14)
+VlnPlot(negSingList[['human2']], features = c("PCP2", "CALB1", "FOXP2", "EBF1", "CNTNAP4", "ITPR1"))
+#### Bergmann Glia -- 5 
+FeaturePlot(negSingList[['human2']], features = c("SLC4A4", "GABRB1", "SLC1A2","PREX2"))
+VlnPlot(negSingList[['human2']], features = c("SLC4A4", "GABRB1", "SLC1A2","PREX2", "SLC1A3", "PTPRZ1")) 
+#### Granule Neurons -- 3 & 0
+DimPlot(negSingList[['human2']], label = T)
+FeaturePlot(negSingList[['human2']], features = c("CHN2", "TENM1", "CADPS2", "CA10"))
+VlnPlot(negSingList[['human2']], features = c("CHN2", "TENM1", "CADPS2", "CA10", "GRIK2"))
+#### Golgi Cells -- 7 (minor 15)
+FeaturePlot(negSingList[['human2']], features = c("GABRG3", "CACNG3", "ELAVL2", "KCNN3"))
+VlnPlot(negSingList[['human2']], features = c("GABRG3", "CACNG3", "ELAVL2", "KCNN3", "LGI2"))
 
 ### Rhesus ----
 DimPlot(negSingList[['rhesus']])
 table(Idents(negSingList[["rhesus"]]))
-#### PCs ----
-FeaturePlot(negSingList[['rhesus']], features = c("PCP2", "CALB1", "FOXP2"))
-VlnPlot(negSingList[['rhesus']], features = c("PCP2", "CALB1", "FOXP2")) # 45 putative PCS (cluster 12)
+#### PCs -- 12
+FeaturePlot(negSingList[['rhesus']], features = c("PCP2", "CALB1"))
+VlnPlot(negSingList[['rhesus']], features = c("PCP2", "CALB1")) # 45 putative PCS (cluster 12)
+VlnPlot(negSingList[['rhesus']], features = c("PCP2", "CALB1", "FOXP2", "EBF1", "CNTNAP4", "ITPR1"))
+#### Bergmann Glia -- 3
+FeaturePlot(negSingList[['rhesus']], features = c("SLC4A4", "GABRB1", "SLC1A2","PREX2"))
+VlnPlot(negSingList[['rhesus']], features = c("SLC4A4", "GABRB1", "SLC1A2","PREX2", "SLC1A3", "PTPRZ1")) 
+#### Granule Neurons -- 9???
+DimPlot(negSingList[['rhesus']], label = T)
+FeaturePlot(negSingList[['rhesus']], features = c("CHN2", "TENM1", "CADPS2", "CA10"))
+VlnPlot(negSingList[['rhesus']], features = c("CHN2", "TENM1", "CADPS2", "CA10", "GRIK2", "RBFOX3"))
+FindMarkers(negSingList[['rhesus']], ident.1 = "9", ident.2 = NULL)
+#### Golgi Cells -- 5 (minor 14)
+FeaturePlot(negSingList[['rhesus']], features = c("GABRG3", "CACNG3", "ELAVL2", "KCNN3"))
+VlnPlot(negSingList[['rhesus']], features = c("GABRG3", "CACNG3", "ELAVL2", "KCNN3", "LGI2"))
+
 
 ### Mouse ----
 DimPlot(negSingList[['mouse']])
 table(Idents(negSingList[['mouse']]))
-#### PCs ----
-FeaturePlot(negSingList[['mouse']], features = c("Pcp2", "Calb1", "Foxp2"))
-VlnPlot(negSingList[['mouse']], features = c("Pcp2", "Calb1", "Foxp2")) # 392 putative PCs (clusters 3&7)
+#### PCs -- 3&7
+FeaturePlot(negSingList[['mouse']], features = c("Pcp2", "Calb1"))
+VlnPlot(negSingList[['mouse']], features = c("Pcp2", "Calb1")) # 392 putative PCs (clusters 3&7)
+VlnPlot(negSingList[['mouse']], features = c("Pcp2", "Calb1", "Foxp2", "Ebf1", "Cntnap4", "Itpr1"))
+#### Astrocytes -- 14
+FeaturePlot(negSingList[['mouse']], features = c("Gfap", "Slc4a4", "Gabrb1", "Slc1a2"))
+VlnPlot(negSingList[['mouse']], features = c("Gfap", "Slc4a4", "Gabrb1", "Slc1a2", "Luzp2", "Aqp4")) # Cluster 14?
+# what distinguishes clusters 4 and 14?
+fourvsfourteen <- FindMarkers(negSingList[['mouse']], ident.1 = "4", ident.2 = "14")
+ms4 <- FindMarkers(negSingList[['mouse']], ident.1 = "4", ident.2 = NULL)
+ms14 <- FindMarkers(negSingList[['mouse']], ident.1 = "14", ident.2 = NULL)
+#### Bergmann Glia -- 4
+FeaturePlot(negSingList[['mouse']], features = c("Slc4a4", "Gabrb1", "Slc1a2", "Prex2"))
+VlnPlot(negSingList[['mouse']], features = c("Slc4a4", "Gabrb1", "Slc1a2", "Prex2", "Slc1a3", "Ptprz1"))
+#### Granule Neurons -- 12
+FeaturePlot(negSingList[['mouse']], features = c("Chn2", "Tenm1", "Cadps2", "Car10"))
+VlnPlot(negSingList[['mouse']], features = c("Chn2", "Tenm1", "Cadps2", "Car10", "Grik2"))
+#### Golgi Cells -- 19 & 5
+DimPlot(negSingList[['mouse']], label = T)
+FeaturePlot(negSingList[['mouse']], features = c("Gabrg3", "Cacng3", "Elavl2", "Kcnn3"))
+VlnPlot(negSingList[['mouse']], features = c("Gabrg3", "Cacng3", "Elavl2", "Kcnn3", "Lgi2"))
 
-## 5.4 Subset putative Purkinje cells ----
+
+
+## 5.4 Compare PC markers ----
+h1PCMarkers <- FindMarkers(negSingList[['human1']], ident.1 = "15", ident.2 = NULL)
+h2PCMarkers <- FindMarkers(negSingList[['human2']], ident.1 = "14", ident.2 = NULL)
+rhesusPCMarkers <- FindMarkers(negSingList[['rhesus']], ident.1 = "12", ident.2 = NULL)
+mousePCMarkers <- FindMarkers(negSingList[['mouse']], ident.1 = c("3", "7"), ident.2 = NULL)
+### Shared markers 
+pcMarkerList <- list()
+pcMarkerList[['human1']] <- rownames(h1PCMarkers) %>% tolower()
+pcMarkerList[['human2']] <- rownames(h2PCMarkers) %>% tolower()
+pcMarkerList[['rhesus']] <- rownames(rhesusPCMarkers) %>% tolower()
+pcMarkerList[['mouse']] <- rownames(mousePCMarkers) %>% tolower()
+# All shared markers 
+Reduce(intersect, pcMarkerList)
+ggVennDiagram(list(pcMarkerList[['human1']], 
+                   pcMarkerList[['human2']], 
+                   pcMarkerList[['rhesus']], 
+                   pcMarkerList[['mouse']]), 
+              category.names = c("Human 1",
+                                 "Human 2", 
+                                 "Rhesus",
+                                 "Mouse"), 
+              force_upset = F)
+# Human shared markers 
+Reduce(intersect, list(pcMarkerList[['human1']], pcMarkerList[['human2']])) %>% length()
+ggVennDiagram(list(pcMarkerList[['human1']], 
+                   pcMarkerList[['human2']]), 
+              category.names = c("Human 1",
+                                 "Human 2")) +
+  coord_flip()
+# Primate shared markers
+Reduce(intersect, list(pcMarkerList[['human1']], pcMarkerList[['human2']], pcMarkerList[['rhesus']])) 
+ggVennDiagram(list(pcMarkerList[['human1']], 
+                   pcMarkerList[['human2']], 
+                   pcMarkerList[['rhesus']]), 
+              category.names = c("Human 1", 
+                                 "Human 2", 
+                                 "Rhesus"))
+# Human and mouse shared markers 
+Reduce(intersect, list(pcMarkerList[['human1']], pcMarkerList[['human2']], pcMarkerList[['mouse']])) # human and mouse shared markers
+ggVennDiagram(list(pcMarkerList[['human1']], 
+                   pcMarkerList[['human2']], 
+                   pcMarkerList[['mouse']]), 
+              category.names = c("Human 1", 
+                                 "Human 2", 
+                                 "Mouse"))
+# Rhesus and mouse shared markers
+Reduce(intersect, list(pcMarkerList[['rhesus']], pcMarkerList[['mouse']])) # rhesus and mouse shared markers
+ggVennDiagram(list(pcMarkerList[['rhesus']], 
+                   pcMarkerList[['mouse']]),
+              category.names = c("Rhesus", 
+                                 "Mouse")) + 
+  coord_flip()
+
+## 5.5 Subset putative Purkinje cells ----
 ### Subset & Re-cluster ----
 putativePCs <- list()
 putativePCs[['mouse']] <- subset(negSingList[["mouse"]], 
@@ -224,16 +337,16 @@ putativePCs[['mouse']] <- RunPCA(putativePCs[["mouse"]], verbose = F)
 putativePCs <- lapply(putativePCs, RunUMAP, dims = 1:30, verbose = F)
 putativePCs <- lapply(putativePCs, FindNeighbors, dims = 1:30, verbose = F)
 putativePCs <- lapply(putativePCs, FindClusters, verbose = F)
-## Plot ----
-### Rhesus ----
+### Plot ----
+#### Rhesus ----
 #FeaturePlot(putativePCs[['rhesus']], features = c("ALDOC", "MPPED2"), ncol = 1) # ZII+ Markers ----
 #FeaturePlot(putativePCs[['rhesus']], features = c("EBF2", "PLCB4"), ncol = 1) # ZII- Markers ----
 #FeaturePlot(putativePCs[['rhesus']], features = c("GRID2", "PRKG1")) # Grid2 Markers ----
-### Mouse ----
+#### Mouse ----
 FeaturePlot(putativePCs[['mouse']], features = c("Aldoc", "Mpped2"), ncol = 1) # ZII+ Markers ----
 FeaturePlot(putativePCs[['mouse']], features = c("Ebf2", "Plcb4"), ncol = 1) # ZII- Markers ----
 FeaturePlot(putativePCs[['mouse']], features = c("Grid2", "Prkg1")) # Grid2 Markers ----
-### Human 2 ----
+#### Human 2 ----
 FeaturePlot(putativePCs[['human2']], features = c("ALDOC", "MPPED2"), ncol = 1, pt.size = 3) # ZII+ Markers ----
 FeaturePlot(putativePCs[['human2']], features = c("EBF2", "PLCB4"), ncol = 1, pt.size = 3) # ZII- Markers ----
 FeaturePlot(putativePCs[['human2']], features = c("GRID2", "PRKG1"), pt.size = 3) # Grid2 Markers ----
