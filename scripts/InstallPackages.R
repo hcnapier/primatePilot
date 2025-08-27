@@ -19,3 +19,6 @@ devtools::install_github('chris-mcginnis-ucsf/MULTI-seq')
 if (!require("BiocManager", quietly = TRUE))
   install.packages("BiocManager")
 BiocManager::install("glmGamPoi")
+
+# integration
+install.packages("rliger")
