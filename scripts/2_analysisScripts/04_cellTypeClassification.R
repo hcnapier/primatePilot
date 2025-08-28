@@ -726,24 +726,25 @@ newIDs_human1 <- c("Granule",
                    "Purkinje")
 names(newIDs_human1) <- levels(noGarbage[['human1']])
 noGarbage[['human1']] <- RenameIdents(noGarbage[['human1']], newIDs_human1)
-DimPlot(noGarbage[['human1']], reduction = 'umap', label = T)
-newIDs_human2 <- c("Granule", 
-                   "MLI2", 
-                   "MLI1", 
-                   "Granule", 
-                   "MLI1", 
-                   "Bergmann", 
-                   "Golgi", 
-                   "MLI2", 
-                   "MLI1", 
-                   "UBC",
-                   "ODC",
-                   "PLI", 
-                   "Purkinje", 
-                   "Golgi")
+DimPlot(noGarbage[['human1']], reduction = 'umap', label = F)
+Idents(noGarbage[["human2"]]) <- "seurat_clusters"
+newIDs_human2 <- c("Granule Neuron", 
+                   "MLI Type 2", 
+                   "MLI Type 1", 
+                   "Granule Neuron", 
+                   "MLI Type 1", 
+                   "Bergmann Glia", 
+                   "Golgi Cell", 
+                   "MLI Type 2", 
+                   "MLI Type 1", 
+                   "Unipolar Brush Cell",
+                   "Oligodendrocyte",
+                   "Purkinje Layer Interneuron", 
+                   "Purkinje Cell", 
+                   "Golgi Cell")
 names(newIDs_human2) <- levels(noGarbage[['human2']])
 noGarbage[['human2']] <- RenameIdents(noGarbage[['human2']], newIDs_human2)
-DimPlot(noGarbage[['human2']], reduction = 'umap', label = T)
+DimPlot(noGarbage[['human2']], reduction = 'umap', label = F)
 newIDs_rhesus <- c("MLI2", 
                    "MLI1", 
                    "UBC", 
