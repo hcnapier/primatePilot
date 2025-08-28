@@ -15,8 +15,9 @@ human1PCs <- subset(noGarbage[['human1']], idents = "Purkinje")
 human2PCs <- subset(noGarbage[['human2']], idents = "Purkinje")
 human1PCs@meta.data$sample <- "human1"
 human2PCs@meta.data$sample <- "human2"
-human2PCs@meta.data %>% colnames()
 humanPCs_merged <- merge(human1PCs, human2PCs)
+humanPCs_merged
+humanPCs_merged[["SCT"]] <- split(humanPCs_merged[["SCT"]], f = humanPCs_merged$sample)
 DefaultAssay(humanPCs_merged) <- "RNA"
 humanPCs_merged
 
@@ -46,6 +47,7 @@ humanPCs_merged <- humanPCs_merged %>%
   FindClusters()
 DimPlot(humanPCs_merged, group.by = "seurat_clusters", pt.size = 4)
 DimPlot(humanPCs_merged, group.by = "sample")
+
 
 # 2.0 Save objects ----
 setwd("~/Work/VertGenLab/Projects/zebrinEvolution/Code/primatePilot/data/seuratObjs")
