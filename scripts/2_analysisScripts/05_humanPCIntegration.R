@@ -48,7 +48,10 @@ humanPCs_merged <- humanPCs_merged %>%
 DimPlot(humanPCs_merged, group.by = "seurat_clusters", pt.size = 4)
 DimPlot(humanPCs_merged, group.by = "sample")
 
+# 2.0 Look at metadata ----
+humanPCs_merged$nCount_RNA %>% mean()
+humanPCs_merged$nFeature_RNA %>% mean()
 
-# 2.0 Save objects ----
+# 3.0 Save objects ----
 setwd("~/Work/VertGenLab/Projects/zebrinEvolution/Code/primatePilot/data/seuratObjs")
 saveRDS(humanPCs_merged, "humanPCsMerged.rds")
