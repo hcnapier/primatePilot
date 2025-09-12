@@ -26,5 +26,5 @@ install.packages("rliger")
 # GO terms
 if (!require("BiocManager", quietly = TRUE))
   install.packages("BiocManager")
-BiocManager::install("clusterProfiler")
-BiocManager::install("org.Hs.eg.db")
+BiocManager::install("clusterProfiler", force = T)
+BiocManager::install("org.Hs.eg.db", force = T)

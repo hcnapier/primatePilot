@@ -78,6 +78,7 @@ humanPCMarkersFilt <- humanPCMarkers %>%
   filter(p_val_adj <= 0.1)
 humanPCMarkers$humanGeneName <- rownames(humanPCMarkers)
 humanPCMarkersFilt$humanGeneName <- rownames(humanPCMarkersFilt)
+humanPCMarkerList <- humanPCMarkersFilt$gene
 
 # 3.0 Convert subtype markers to human ortholog ----
 mousePCMarkers <- left_join(mousePCMarkers, mouseOrthologs, by = "geneName")
@@ -159,9 +160,8 @@ mousePCGO <- enrichGO(as.character(mousePCMarkersFilt_entrez$entrezgene_id),
                       pvalueCutoff = 0.5)
 clusterProfiler::dotplot(mousePCGO)
 
-## 1.4 Save GO terms ----
-saveRDS(highest10perVarGO, "highest10percentVarianceGOTerms.rds")
-saveRDS(lowest10perVarGO, "lowest10percentVarianceGOTerms.rds")
-saveRDS(highest30perVarGO, "highest30percentVarianceGOTerms.rds")
-saveRDS(lowest30perVarGO, "lowest30percentVarianceGOTerms.rds")
-        
+# 7.0 Save gene lists ----
+setwd("~/Work/VertGenLab/Projects/zebrinEvolution/Code/primatePilot/data")
+write.csv(mousePCMarkers, "mousePCSubtypeMarkers.csv")
+write.csv(humanPCMarkers, "humanPCSubtypeMarkers.csv")
+
