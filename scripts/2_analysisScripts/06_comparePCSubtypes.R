@@ -33,6 +33,10 @@ rm(orthologsAll)
 setwd("/Users/haileynapier/Work/VertGenLab/Projects/zebrinEvolution/Code/retinaOUProcess/RetinaOUProcess/data/RAnalysisOutput")
 G_list <- readRDS("geneEntrezIDList.rds")
 
+setwd("/Users/haileynapier/Work/VertGenLab/Projects/zebrinEvolution/Data/geneLists")
+diseaseGenes <- read.csv("diseaseGenes.txt", header = F)
+diseaseGenes <- diseaseGenes$V1
+
 # 1.0 Subset & Re-cluster PCs ----
 ## 1.1 Mouse ----
 mousePCs <- noGarbage[['mouse']] %>% subset(idents = "Purkinje")
@@ -159,6 +163,10 @@ mousePCGO <- enrichGO(as.character(mousePCMarkersFilt_entrez$entrezgene_id),
                       qvalueCutoff = 0.5, 
                       pvalueCutoff = 0.5)
 clusterProfiler::dotplot(mousePCGO)
+
+
+# 7.0 Compare subtype marker genes to disease gene list
+
 
 # 7.0 Save gene lists ----
 setwd("~/Work/VertGenLab/Projects/zebrinEvolution/Code/primatePilot/data")
