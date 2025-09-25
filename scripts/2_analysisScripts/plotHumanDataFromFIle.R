@@ -45,7 +45,7 @@ newIDs_human2 <- c("Granule Neuron",
                    "Unipolar Brush Cell",
                    "Oligodendrocyte",
                    "Purkinje Layer Interneuron", 
-                   "Purkinje Cell", 
+                   "Purkinje", 
                    "Golgi Cell")
 names(newIDs_human2) <- levels(noGarbage[['human2']])
 noGarbage[['human2']] <- RenameIdents(noGarbage[['human2']], newIDs_human2)
@@ -64,8 +64,9 @@ VlnPlot(humanPCs_merged, features = c("GRID2", "CA8", "RNR2", "COX2"), ncol = 2,
 ggVennDiagram(list(mousePCMarkersFilt$humanGeneName, humanPCMarkersFilt$gene), 
               category.names = c("Mouse", "Human"), label = "none") +
   coord_flip()
-intersect(mousePCMarkersFilt$humanGeneName, humanPCMarkersFilt$gene)
-
+mammalConserved <- intersect(mousePCMarkersFilt$humanGeneName, humanPCMarkersFilt$gene)
+intersect(mammalConserved, diseaseGenes)
+intersect(humanPCMarkersFilt$gene, diseaseGenes)
 
 # Cell type markers ----
 top5NoGarbage <- list()
@@ -88,4 +89,4 @@ DimPlot(noGarbage[['human2']])
 DotPlot(noGarbage[['human2']], features = unique(top3NoGarbage[['human2']]$gene), dot.scale = 5) + 
   theme(axis.text.x = element_text(size = 7, angle = 45, vjust = 1, hjust = 1))
 
-top10NoGarbage[['human2']]$gene %>% unique()
+top3NoGarbage[['human2']] %>% print(n = 50)

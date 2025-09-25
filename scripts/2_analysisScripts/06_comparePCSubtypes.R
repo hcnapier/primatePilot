@@ -11,12 +11,14 @@ library(ggplot2)
 library(ggVennDiagram)
 library(clusterProfiler)
 library(org.Hs.eg.db)
+require(readxl)
 
 ## 0.2 Load data ----
 #setwd("~/Work/VertGenLab/Projects/zebrinEvolution/Code/primatePilot/data/seuratObjs")
 #humanPCs_merged <- readRDS("humanPCsMerged.rds")
 #noGarbage <- readRDS("speciesObjList_cleanCellTypeLabled.rds")
 setwd("/Users/haileynapier/Work/VertGenLab/Projects/zebrinEvolution/Data/geneLists")
+msAldocAxis <- read_xlsx("VoermanEtAlSupp_MSAldocAxisGenes.xlsx", sheet = "All genes")
 orthologsAll <- read.delim("human_rhesusMouseOrthologs.txt", sep = "\t", header = T)
 mouseOrthologs <- orthologsAll %>%
   select(Gene.name, Mouse.gene.name, Mouse.homology.type) %>%
@@ -69,6 +71,8 @@ mousePCMarkersFilt <- mousePCMarkers %>%
 mousePCMarkers$geneName <- rownames(mousePCMarkers)
 mousePCMarkersFilt$geneName <- rownames(mousePCMarkersFilt)
 
+msAldocAxis$geneName <- msAldocAxis$Gene
+
 rhesusPCMarkers <- rhesusPCs %>%
   FindMarkers(ident.1 = "0", ident.2 = "1") 
 rhesusPCMarkersFilt <- rhesusPCMarkers %>%
@@ -76,15 +80,19 @@ rhesusPCMarkersFilt <- rhesusPCMarkers %>%
 rhesusPCMarkers$geneName <- rownames(rhesusPCMarkers)
 rhesusPCMarkersFilt$geneName <- rownames(rhesusPCMarkersFilt)
 
+
 humanPCMarkers <- humanPCs_merged %>%
   FindMarkers(ident.1 = "0", ident.2 = "1") 
 humanPCMarkersFilt <- humanPCMarkers %>%
   filter(p_val_adj <= 0.1)
+  
 humanPCMarkers$humanGeneName <- rownames(humanPCMarkers)
 humanPCMarkersFilt$humanGeneName <- rownames(humanPCMarkersFilt)
 humanPCMarkerList <- humanPCMarkersFilt$gene
 
+
 # 3.0 Convert subtype markers to human ortholog ----
+msAldocAxis <- left_join(msAldocAxis, mouseOrthologs, by = "geneName")
 mousePCMarkers <- left_join(mousePCMarkers, mouseOrthologs, by = "geneName")
 mousePCMarkersFilt <- left_join(mousePCMarkersFilt, mouseOrthologs, by = "geneName")
 rhesusPCMarkers <- left_join(rhesusPCMarkers, rhesusOrthologs, by = "geneName")
@@ -97,6 +105,11 @@ allSharedMarkers <- intersect(primateSharedMarkers, mousePCMarkersFilt$humanGene
 allSharedMarkers
 rhesusMouseSharedMarkers <- intersect(rhesusPCMarkersFilt$humanGeneName, mousePCMarkersFilt$humanGeneName)
 humanMouseSharedMarkers <- intersect(humanPCMarkersFilt$humanGeneName, mousePCMarkersFilt$humanGeneName)
+suppMouseHumanSharedMarkers <- intersect(humanPCMarkersFilt$humanGeneName, msAldocAxis$humanGeneName)
+mouseSuppMouseShared <- intersect(mousePCMarkersFilt$geneName, msAldocAxis$geneName)
+mouseSuppMouseShared
+humanMouseCommon <- intersect(humanMouseSharedMarkers, suppMouseHumanSharedMarkers)
+humanMouseCommon
 
 # 5.0 Plot ----
 ## 5.1 Venn diagrams ----
@@ -131,21 +144,68 @@ names(mousePCMarkers)[7] <- "gene"
 names(mousePCMarkersFilt)[7] <- "gene"
 names(humanPCMarkers)[6] <- "gene"
 names(humanPCMarkersFilt)[6] <- "gene"
+
+mousePCEntrez <- bitr(mousePCMarkers$gene, fromType = "SYMBOL", toType = "ENTREZID", OrgDb = "org.Hs.eg.db")
 mousePCMarkers_entrez <- inner_join(mousePCMarkers, entrezIDList)
 mousePCMarkersFilt_entrez <- inner_join(mousePCMarkersFilt, entrezIDList)
-humanPCMarkers_entrez <- inner_join(humanPCMarkers, entrezIDList)
-humanPCMarkersFilt_entrez <- inner_join(humanPCMarkersFilt, entrezIDList)
+
+dfsample$`0` = bitr(dfsample$`0`, fromType="SYMBOL", toType="ENTREZID", OrgDb="org.Hs.eg.db")
+humanPCEntrez <- bitr(humanPCMarkers$gene, fromType = "SYMBOL", toType = "ENTREZID", OrgDb = "org.Hs.eg.db")
+names(humanPCEntrez) <- c("gene", "entrezgene_id")
+humanPCMarkers_entrez <- inner_join(humanPCMarkers, humanPCEntrez)
+humanPCMarkersFilt_entrez <- inner_join(humanPCMarkersFilt, humanPCEntrez)
+
 
 ## 6.2 Get GO terms ----
-humanPCGO <- enrichGO(as.character(humanPCMarkersFilt_entrez$entrezgene_id), 
-                              OrgDb = org.Hs.eg.db,
-                              ont = 'BP',
-                              keyType = "ENTREZID", 
-                              universe = as.character(entrezIDList$entrezgene_id),
-                              qvalueCutoff = 0.5, 
-                              pvalueCutoff = 0.1)
+### Human ----
+humanPCGO <- enrichGO(as.character(humanPCMarkersFilt_entrez$entrezgene_id),
+                      OrgDb = org.Hs.eg.db,
+                      ont = 'BP',
+                      keyType = "ENTREZID", 
+                      universe = humanPCMarkers_entrez$entrezgene_id,
+                      qvalueCutoff = 0.5,
+                      pvalueCutoff = 0.1)
 clusterProfiler::dotplot(humanPCGO)
 
+cluster0 <- humanPCMarkersFilt_entrez %>%
+  filter(avg_log2FC > 0) %>%
+  pull(entrezgene_id)
+
+cluster1 <- humanPCMarkersFilt_entrez %>%
+  filter(avg_log2FC < 0) %>%
+  pull(entrezgene_id)
+
+clusterList <- list(cluster0 = cluster0, 
+                    cluster1 = cluster1)
+
+GOclusterplot <- compareCluster(geneCluster = clusterList, fun = "enrichGO", OrgDb = "org.Hs.eg.db")
+dotplot(GOclusterplot)
+
+# Try a different way
+humanPCClusterMarkers <- FindAllMarkers(humanPCs_merged, only.pos = T)
+humanPCClusterEntrez <- bitr(humanPCClusterMarkers$gene, fromType = "SYMBOL", toType = "ENTREZID", OrgDb = "org.Hs.eg.db")
+names(humanPCClusterEntrez) <- c("gene", "entrezgene_id")
+
+cluster0 <- humanPCClusterMarkers %>%
+  filter(p_val_adj < 0.05) %>%
+  filter(cluster == 0) %>%
+  distinct() %>%
+  inner_join(humanPCClusterEntrez) %>%
+  pull(entrezgene_id)
+
+cluster1 <- humanPCClusterMarkers %>%
+  filter(p_val_adj < 0.05) %>%
+  filter(cluster == 1) %>%
+  distinct() %>%
+  inner_join(humanPCClusterEntrez) %>%
+  pull(entrezgene_id)
+
+clusterList <- list(cluster0 = cluster0, 
+                    cluster1 = cluster1)
+GOclusterplot2 <- compareCluster(geneCluster = clusterList, fun = "enrichGO", OrgDb = "org.Hs.eg.db")
+dotplot(GOclusterplot2)
+
+### Mouse ----
 mousePCGO <- enrichGO(as.character(mousePCMarkersFilt_entrez$entrezgene_id), 
                       OrgDb = org.Hs.eg.db,
                       ont = 'BP',
@@ -164,6 +224,16 @@ mousePCGO <- enrichGO(as.character(mousePCMarkersFilt_entrez$entrezgene_id),
                       pvalueCutoff = 0.5)
 clusterProfiler::dotplot(mousePCGO)
 
+mouseCluster3 <- mousePCMarkersFilt_entrez %>%
+  filter(avg_log2FC > 0) %>%
+  pull(entrezgene_id)
+mouseCluster2 <- mousePCMarkersFilt_entrez %>%
+  filter(avg_log2FC < 0) %>%
+  pull(entrezgene_id)
+mouseClusterList <- list(cluster3 = mouseCluster3, 
+                         cluster2 = mouseCluster2)
+mouse_clusterplot <- compareCluster(geneCluster = mouseClusterList, fun = "enrichGO", OrgDb = "org.Hs.eg.db")
+dotplot(mouse_clusterplot)
 
 # 7.0 Compare subtype marker genes to disease gene list
 
