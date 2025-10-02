@@ -79,9 +79,28 @@ for(currSpecies in speciesNames[2:4]){
   pseudobulkMerged <- pseudobulkMerged[,colsOrdered]
 }
 
+# 3.3 Convert back into a matrix
+row.names(pseudobulkMerged) <- pseudobulkMerged$RowNames
+pseudobulkMerged$RowNames <- NULL
+pseudobulkMerged <- pseudobulkMerged %>% as.matrix()
 
 
-# human 1 vs human 2
+# 4.0 Pearson correlation ----
+## 4.1 All pairwise comparisons ----
+cormat_allPairwise <- cor(pseudobulkMerged)
+melted_cormat_allPairwise <- melt(cormat_allPairwise)
+allPairwise_corPlot <- ggplot(data = melted_cormat_allPairwise, aes(Var1, Var2, fill = value))+
+  geom_tile(color = "white")+
+  scale_fill_gradient2(low = "blue", high = "red", mid = "white", 
+                       midpoint = 0, limit = c(-1,1), space = "Lab", 
+                       name="Pearson\nCorrelation") +
+  theme_minimal()+ 
+  theme(axis.text.x = element_text(angle = 90, vjust = 1, 
+                                   size = 10, hjust = 1))+
+  coord_fixed()
+allPairwise_corPlot
+
+## 4.2 human 1 vs human 2 ----
 cormat <- cor(noGarbage_pseudobulk[["human1"]], noGarbage_pseudobulk[["human2"]])
 melted_cormat_h1h2 <- melt(cormat)
 names(melted_cormat_h1h2) <- c("Human1", "Human2", "value")
@@ -94,5 +113,3 @@ h1vsh2_corPlot <- ggplot(data = melted_cormat_h1h2, aes(Human1, Human2, fill = v
   theme(axis.text.x = element_text(angle = 45, vjust = 1, 
                                    size = 12, hjust = 1))+
   coord_fixed()
-
-# human 1 vs mouse
