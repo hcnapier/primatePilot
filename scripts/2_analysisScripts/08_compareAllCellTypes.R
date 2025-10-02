@@ -10,8 +10,8 @@ require(dplyr)
 require(reshape2)
 require(ggplot2)
 ## 0.2 Load data ----
-#setwd("~/Work/VertGenLab/Projects/zebrinEvolution/Code/primatePilot/data/seuratObjs")
-#noGarbage <- readRDS("speciesObjList_cleanCellTypeLabled.rds")
+setwd("~/Work/VertGenLab/Projects/zebrinEvolution/Code/primatePilot/data/seuratObjs")
+noGarbage <- readRDS("speciesObjList_cleanCellTypeLabled.rds")
 setwd("/Users/haileynapier/Work/VertGenLab/Projects/zebrinEvolution/Data/geneLists/orthologs")
 orthologsAll <- read.delim("human_MouseMarmosetMacaque_orthologs.txt", sep = "\t", header = T)
 all121Orthologs <- orthologsAll %>%
@@ -57,7 +57,7 @@ for(currSpecies in speciesNames){
 }
 
 
-# 3.0 Pearson correlation ----
+# 3.0 Format data ----
 ## 3.1 Convert sparse matrix to dense matrix 
 noGarbage_pseudobulk <- lapply(noGarbage_pseudobulk, as.matrix)
 for(currSpecies in speciesNames){
@@ -66,10 +66,19 @@ for(currSpecies in speciesNames){
   colnames(noGarbage_pseudobulk[[currSpecies]]) <- paste(colnames(noGarbage_pseudobulk[[currSpecies]]), currSpecies, sep = "_")
 }
 
-pseudobulkMerged <- noGarbage_pseudobulk[['human1']]
-lapply(noGarbage_pseudobulk[2:4], merge, pseudobulkMerged)
-
 ## 3.2 Merge all matrices 
+pseudobulkMerged <- noGarbage_pseudobulk[["human1"]] %>% as.data.frame()
+pseudobulkMerged$RowNames <- pseudobulkMerged %>% row.names()
+
+for(currSpecies in speciesNames[2:4]){
+  temp <- noGarbage_pseudobulk[[currSpecies]] %>% as.data.frame()
+  temp$RowNames <- temp %>% row.names()
+  pseudobulkMerged <- merge(pseudobulkMerged, temp)
+  # order columns by cell type
+  colsOrdered <- sort(colnames(pseudobulkMerged))
+  pseudobulkMerged <- pseudobulkMerged[,colsOrdered]
+}
+
 
 
 # human 1 vs human 2
