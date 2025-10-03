@@ -8,6 +8,7 @@
 require(Seurat)
 require(dplyr)
 require(ggplot2)
+require(reshape2)
 
 ## 0.2 Setup one to one orthologs ----
 setwd("/Users/haileynapier/Work/VertGenLab/Projects/zebrinEvolution/Data/geneLists/orthologs")
@@ -28,6 +29,7 @@ pseudobulkMerged %>%
 names(pseudobulkMerged_pcs) <- paste(names(pseudobulkMerged_pcs), "Napier", sep = "_")
 pseudobulkMerged_pcs <- pseudobulkMerged_pcs[rowSums(pseudobulkMerged_pcs[, -1])>0, ]
 rm(pseudobulkMerged)
+pseudobulkMerged_pcs$gene.name <- rownames(pseudobulkMerged_pcs)
 
 ## 0.4 Setup Hao rhesus data ----
 # load data 
@@ -86,6 +88,24 @@ inner_join(pseudobulk_barteltMousePCs, allPrimateOrthologs) %>%
   select(gene.name, Purkinje_mouse_Bartelt) -> pseudobulk_barteltMousePCs
 
 ## 0.6 Merge all into one matrix ----
-pseudobulkMerged_pcs
-as.data.frame(pseudobulk_barteltMousePCs)
-as.data.frame(pseudobulk_haoMarmoset)
+pseudobulkMerged_pcs <- inner_join(pseudobulkMerged_pcs, pseudobulk_haoRhesus)
+pseudobulkMerged_pcs <- inner_join(pseudobulkMerged_pcs, pseudobulk_haoMarmoset)
+pseudobulkMerged_pcs <- inner_join(pseudobulkMerged_pcs, pseudobulk_barteltMousePCs)
+rownames(pseudobulkMerged_pcs) <- pseudobulkMerged_pcs$gene.name
+pseudobulkMerged_pcs$gene.name <- NULL
+pseudobulkMerged_pcs %>% as.matrix() -> pseudobulkMerged_pcs
+
+
+# 1.0 Pairwise correlations ----
+crossDatasetPCCormat <- cor(pseudobulkMerged_pcs)
+melted_crossDatasetPCCormat <- melt(crossDatasetPCCormat)
+crossDatasetPC_corPlot <- ggplot(data = melted_crossDatasetPCCormat, aes(Var1, Var2, fill = value))+
+  geom_tile(color = "white")+
+  scale_fill_gradient2(low = "blue", high = "red", mid = "white", 
+                       midpoint = 0.5, limit = c(0,1), space = "Lab", 
+                       name="Pearson\nCorrelation") +
+  theme_minimal()+ 
+  theme(axis.text.x = element_text(angle = 90, vjust = 1, 
+                                   size = 10, hjust = 1))+
+  coord_fixed()
+crossDatasetPC_corPlot
