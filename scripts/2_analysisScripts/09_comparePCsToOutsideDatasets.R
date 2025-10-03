@@ -40,7 +40,12 @@ pseudobulk_haoRhesus <- pseudobulk_haoRhesus$RNA %>% as.matrix()
 # remove zero counts
 pseudobulk_haoRhesus <- pseudobulk_haoRhesus[rowSums(pseudobulk_haoRhesus)>0, ] 
 rm(haoRhesus)
-
+# convert to human ortholog 
+pseudobulk_haoRhesus <- pseudobulk_haoRhesus %>% as.data.frame()
+pseudobulk_haoRhesus$mouse.gene.name <- rownames(pseudobulk_haoRhesus)
+names(pseudobulk_haoRhesus) <- c("Purkinje_rhesus_Hao", "macaque.gene.name")
+inner_join(pseudobulk_haoRhesus, allPrimateOrthologs) %>%
+  select(gene.name, Purkinje_rhesus_Hao) -> pseudobulk_haoRhesus
 
 ## 0.5 Setup Hao marmoset data ----
 # load data 
@@ -53,6 +58,12 @@ pseudobulk_haoMarmoset <- pseudobulk_haoMarmoset$RNA %>% as.matrix()
 # remove zero counts
 pseudobulk_haoMarmoset <- pseudobulk_haoMarmoset[rowSums(pseudobulk_haoMarmoset)>0, ] 
 rm(haoMarmoset)
+# convert to human ortholog 
+pseudobulk_haoMarmoset <- pseudobulk_haoMarmoset %>% as.data.frame()
+pseudobulk_haoMarmoset$mouse.gene.name <- rownames(pseudobulk_haoMarmoset)
+names(pseudobulk_haoMarmoset) <- c("Purkinje_marmoset_Hao", "white.tufted.ear.marmoset.gene.name")
+inner_join(pseudobulk_haoMarmoset, allPrimateOrthologs) %>%
+  select(gene.name, Purkinje_marmoset_Hao) -> pseudobulk_haoMarmoset
 
 ## 0.6 Setup Bartelt mouse data ----
 # load data 
@@ -67,7 +78,14 @@ pseudobulk_barteltMousePCs <- AggregateExpression(barteltMousePCs, features = pu
 pseudobulk_barteltMousePCs <- pseudobulk_barteltMousePCs$RNA %>% as.matrix()
 # remove zero counts
 pseudobulk_barteltMousePCs <- pseudobulk_barteltMousePCs[rowSums(pseudobulk_barteltMousePCs)>0, ] 
+# convert to human ortholog 
+pseudobulk_barteltMousePCs <- pseudobulk_barteltMousePCs %>% as.data.frame()
+pseudobulk_barteltMousePCs$mouse.gene.name <- rownames(pseudobulk_barteltMousePCs)
+names(pseudobulk_barteltMousePCs) <- c("Purkinje_mouse_Bartelt", "mouse.gene.name")
+inner_join(pseudobulk_barteltMousePCs, allPrimateOrthologs) %>%
+  select(gene.name, Purkinje_mouse_Bartelt) -> pseudobulk_barteltMousePCs
 
 ## 0.6 Merge all into one matrix ----
+pseudobulkMerged_pcs
 as.data.frame(pseudobulk_barteltMousePCs)
 as.data.frame(pseudobulk_haoMarmoset)
