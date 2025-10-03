@@ -117,3 +117,4 @@ h1vsh2_corPlot <- ggplot(data = melted_cormat_h1h2, aes(Human1, Human2, fill = v
 
 # 5.0 Save ----
 saveRDS(pseudobulkMerged, "~/Work/VertGenLab/Projects/zebrinEvolution/Code/primatePilot/data/pseudobulkMerged.rds")
+saveRDS(all121Orthologs, "~/Work/VertGenLab/Projects/zebrinEvolution/Code/primatePilot/data/one2oneOrthologs_filtered")
