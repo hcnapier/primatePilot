@@ -4,11 +4,15 @@
 # Hailey Napier
 
 # 0.0 Setup ----
-## 0.1 Load packages ----
+## 0.1 Load packages & functions ----
 require(Seurat)
 require(dplyr)
 require(ggplot2)
 require(reshape2)
+
+setwd("~/Work/VertGenLab/Projects/zebrinEvolution/Code/primatePilot/functions")
+source("pseudobulkHumanOrtholog.R")
+source("getOrthologCountMat.R")
 
 ## 0.2 Setup one to one orthologs ----
 setwd("/Users/haileynapier/Work/VertGenLab/Projects/zebrinEvolution/Data/geneLists/orthologs")
@@ -35,55 +39,37 @@ pseudobulkMerged_pcs$gene.name <- rownames(pseudobulkMerged_pcs)
 # load data 
 setwd("~/Work/VertGenLab/Projects/zebrinEvolution/Code/haoReanalysis/data/seuratObjs")
 haoRhesus <- readRDS("macaqueSingleCellPC.rds")
-# aggregate expression
-pseudobulk_haoRhesus <- AggregateExpression(haoRhesus, features = pull(allPrimateOrthologs["macaque.gene.name"]), group.by = "doublet_info", return.seurat = F, assays = "RNA") #group by doublet_info to lump all cells together
-# convert to dense matrix 
-pseudobulk_haoRhesus <- pseudobulk_haoRhesus$RNA %>% as.matrix()
-# remove zero counts
-pseudobulk_haoRhesus <- pseudobulk_haoRhesus[rowSums(pseudobulk_haoRhesus)>0, ] 
+# pseudobulk
+pseudobulk_haoRhesus <- pseudobulkHumanOrtholog(haoRhesus, 
+                                                groupByIdent = "doublet_info", 
+                                                orthologDF = allPrimateOrthologs, 
+                                                species = "macaque", 
+                                                datasetID = "Purkinje_rhesus_Hao")
 rm(haoRhesus)
-# convert to human ortholog 
-pseudobulk_haoRhesus <- pseudobulk_haoRhesus %>% as.data.frame()
-pseudobulk_haoRhesus$macaqe.gene.name <- rownames(pseudobulk_haoRhesus)
-names(pseudobulk_haoRhesus) <- c("Purkinje_rhesus_Hao", "macaque.gene.name")
-inner_join(pseudobulk_haoRhesus, allPrimateOrthologs) %>%
-  select(gene.name, Purkinje_rhesus_Hao) -> pseudobulk_haoRhesus
 
 ## 0.5 Setup Hao marmoset data (not clean) ----
 # load data 
 setwd("~/Work/VertGenLab/Projects/zebrinEvolution/Code/haoReanalysis/data/seuratObjs")
 haoMarmoset <- readRDS("marmosetSingleCellPC.rds")
-# aggregate expression
-pseudobulk_haoMarmoset <- AggregateExpression(haoMarmoset, features = pull(allPrimateOrthologs["white.tufted.ear.marmoset.gene.name"]), group.by = "doublet_info", return.seurat = F, assays = "RNA") #group by doublet_info to lump all cells together
-# convert to dense matrix 
-pseudobulk_haoMarmoset <- pseudobulk_haoMarmoset$RNA %>% as.matrix()
-# remove zero counts
-pseudobulk_haoMarmoset <- pseudobulk_haoMarmoset[rowSums(pseudobulk_haoMarmoset)>0, ] 
+# pseudobulk 
+pseudobulk_haoMarmoset <- pseudobulkHumanOrtholog(haoMarmoset, 
+                                                  groupByIdent = "doublet_info", 
+                                                  orthologDF = allPrimateOrthologs, 
+                                                  species = "white.tufted.ear.marmoset",
+                                                  datasetID = "Purkinje_marmoset_Hao_NOTCLEAN")
 rm(haoMarmoset)
-# convert to human ortholog 
-pseudobulk_haoMarmoset <- pseudobulk_haoMarmoset %>% as.data.frame()
-pseudobulk_haoMarmoset$white.tufted.ear.marmoset.gene.name <- rownames(pseudobulk_haoMarmoset)
-names(pseudobulk_haoMarmoset) <- c("Purkinje_marmoset_Hao_NOTCLEAN", "white.tufted.ear.marmoset.gene.name")
-inner_join(pseudobulk_haoMarmoset, allPrimateOrthologs) %>%
-  select(gene.name, Purkinje_marmoset_Hao_NOTCLEAN) -> pseudobulk_haoMarmoset
 
 ## 0.5 Setup Hao marmoset data (CLEAN) ----
 # load data 
 setwd("~/Work/VertGenLab/Projects/zebrinEvolution/Code/haoReanalysis/data/seuratObjs/cleaned")
 haoMarmoset_clean <- readRDS("haoMarmosetPCs_clean.rds")
-# aggregate expression
-pseudobulk_haoMarmoset_clean <- AggregateExpression(haoMarmoset_clean, features = pull(allPrimateOrthologs["white.tufted.ear.marmoset.gene.name"]), group.by = "doublet_info", return.seurat = F, assays = "RNA") #group by doublet_info to lump all cells together
-# convert to dense matrix 
-pseudobulk_haoMarmoset_clean <- pseudobulk_haoMarmoset_clean$RNA %>% as.matrix()
-# remove zero counts
-pseudobulk_haoMarmoset_clean <- pseudobulk_haoMarmoset_clean[rowSums(pseudobulk_haoMarmoset_clean)>0, ] 
+# pseudobulk 
+pseudobulk_haoMarmoset_clean <- pseudobulkHumanOrtholog(haoMarmoset_clean, 
+                                                  groupByIdent = "doublet_info", 
+                                                  orthologDF = allPrimateOrthologs, 
+                                                  species = "white.tufted.ear.marmoset",
+                                                  datasetID = "Purkinje_marmoset_Hao")
 rm(haoMarmoset_clean)
-# convert to human ortholog 
-pseudobulk_haoMarmoset_clean <- pseudobulk_haoMarmoset_clean %>% as.data.frame()
-pseudobulk_haoMarmoset_clean$white.tufted.ear.marmoset.gene.name <- rownames(pseudobulk_haoMarmoset_clean)
-names(pseudobulk_haoMarmoset_clean) <- c("Purkinje_marmoset_Hao", "white.tufted.ear.marmoset.gene.name")
-inner_join(pseudobulk_haoMarmoset_clean, allPrimateOrthologs) %>%
-  select(gene.name, Purkinje_marmoset_Hao) -> pseudobulk_haoMarmoset_clean
 
 ## 0.6 Setup Bartelt mouse data ----
 # load data 
@@ -92,20 +78,15 @@ barteltMousePCs <- subset(barteltMouse, idents = "Purkinje cells")
 Idents(barteltMousePCs) <- "Type"
 barteltMousePCs <- subset(barteltMousePCs, idents = "WT")
 rm(barteltMouse)
-# aggregate expression
-pseudobulk_barteltMousePCs <- AggregateExpression(barteltMousePCs, features = pull(allPrimateOrthologs["mouse.gene.name"]), group.by = "Type", return.seurat = F, assays = "RNA") #group by Type to lump all PCs together
-# convert to dense matrix
-pseudobulk_barteltMousePCs <- pseudobulk_barteltMousePCs$RNA %>% as.matrix()
-# remove zero counts
-pseudobulk_barteltMousePCs <- pseudobulk_barteltMousePCs[rowSums(pseudobulk_barteltMousePCs)>0, ] 
-# convert to human ortholog 
-pseudobulk_barteltMousePCs <- pseudobulk_barteltMousePCs %>% as.data.frame()
-pseudobulk_barteltMousePCs$mouse.gene.name <- rownames(pseudobulk_barteltMousePCs)
-names(pseudobulk_barteltMousePCs) <- c("Purkinje_mouse_Bartelt", "mouse.gene.name")
-inner_join(pseudobulk_barteltMousePCs, allPrimateOrthologs) %>%
-  select(gene.name, Purkinje_mouse_Bartelt) -> pseudobulk_barteltMousePCs
+# pseudobulk
+pseudobulk_barteltMousePCs <- pseudobulkHumanOrtholog(barteltMousePCs, 
+                                                      groupByIdent = "Type", 
+                                                      orthologDF = allPrimateOrthologs, 
+                                                      species = "mouse", 
+                                                      datasetID = "Purkinje_mouse_Bartelt")
+rm(barteltMousePCs)
 
-## 0.6 Merge all into one matrix ----
+## 0.6 Merge all pseudobulked DFs into one matrix ----
 pseudobulkMerged_pcs <- inner_join(pseudobulkMerged_pcs, pseudobulk_haoRhesus)
 pseudobulkMerged_pcs <- inner_join(pseudobulkMerged_pcs, pseudobulk_haoMarmoset)
 pseudobulkMerged_pcs <- inner_join(pseudobulkMerged_pcs, pseudobulk_haoMarmoset_clean)
