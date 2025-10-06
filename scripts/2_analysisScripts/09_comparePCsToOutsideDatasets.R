@@ -45,6 +45,10 @@ pseudobulk_haoRhesus <- pseudobulkHumanOrtholog(haoRhesus,
                                                 orthologDF = allPrimateOrthologs, 
                                                 species = "macaque", 
                                                 datasetID = "Purkinje_rhesus_Hao")
+# get count matrix in terms of human orthologs
+countMat_haoRhesus_pc <- getOrthologCountMat(haoRhesus,
+                                             allPrimateOrthologs, 
+                                             "macaque")
 rm(haoRhesus)
 
 ## 0.5 Setup Hao marmoset data (not clean) ----
@@ -57,6 +61,10 @@ pseudobulk_haoMarmoset <- pseudobulkHumanOrtholog(haoMarmoset,
                                                   orthologDF = allPrimateOrthologs, 
                                                   species = "white.tufted.ear.marmoset",
                                                   datasetID = "Purkinje_marmoset_Hao_NOTCLEAN")
+# get count matrix in terms of human orthologs
+countMat_haoMarmoset_pc <- getOrthologCountMat(haoMarmoset, 
+                                               allPrimateOrthologs, 
+                                               "white.tufted.ear.marmoset")
 rm(haoMarmoset)
 
 ## 0.5 Setup Hao marmoset data (CLEAN) ----
@@ -69,6 +77,10 @@ pseudobulk_haoMarmoset_clean <- pseudobulkHumanOrtholog(haoMarmoset_clean,
                                                   orthologDF = allPrimateOrthologs, 
                                                   species = "white.tufted.ear.marmoset",
                                                   datasetID = "Purkinje_marmoset_Hao")
+# get count matrix in terms of human orthologs
+countMat_haoMarmoset_pc_clean <- getOrthologCountMat(haoMarmoset_clean, 
+                                                     allPrimateOrthologs, 
+                                                     "white.tufted.ear.marmoset")
 rm(haoMarmoset_clean)
 
 ## 0.6 Setup Bartelt mouse data ----
@@ -84,6 +96,10 @@ pseudobulk_barteltMousePCs <- pseudobulkHumanOrtholog(barteltMousePCs,
                                                       orthologDF = allPrimateOrthologs, 
                                                       species = "mouse", 
                                                       datasetID = "Purkinje_mouse_Bartelt")
+# get count matrix in terms of human orthologs
+countMat_barteltMouse_pc <- getOrthologCountMat(barteltMousePCs,
+                                                allPrimateOrthologs, 
+                                                "mouse")
 rm(barteltMousePCs)
 
 ## 0.6 Merge all pseudobulked DFs into one matrix ----
@@ -96,7 +112,7 @@ pseudobulkMerged_pcs$gene.name <- NULL
 pseudobulkMerged_pcs %>% as.matrix() -> pseudobulkMerged_pcs
 
 
-# 1.0 Pairwise correlations ----
+# 1.0 Pairwise Pearson correlations ----
 crossDatasetPCCormat <- cor(pseudobulkMerged_pcs)
 melted_crossDatasetPCCormat <- melt(crossDatasetPCCormat)
 crossDatasetPC_corPlot <- ggplot(data = melted_crossDatasetPCCormat, aes(Var1, Var2, fill = value))+
@@ -109,3 +125,9 @@ crossDatasetPC_corPlot <- ggplot(data = melted_crossDatasetPCCormat, aes(Var1, V
                                    size = 10, hjust = 1))+
   coord_fixed()
 crossDatasetPC_corPlot
+
+
+# 2.0 Dynamic range within speices 
+
+
+# 3.0 Dynamic range across species 
