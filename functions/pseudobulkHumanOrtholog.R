@@ -7,21 +7,19 @@
 require(Seurat)
 require(dplyr)
 
-pseudobulkHumanOrtholog <- function(obj, groupByIdent = "ident", orthologDF, species, returnSeuratBool = FALSE){
+pseudobulkHumanOrtholog <- function(obj, groupByIdent = "ident", orthologDF, species, datasetID){
   # aggregate expression
-  pseudobulked <- AggregateExpression(obj, features = pull(orthologDF[species]), group.by = groupByIdent, return.seurat = returnSeuratBool, assays = "RNA")
+  speciesGeneName <- paste(species, "gene.name", sep = ".")
+  pseudobulked <- AggregateExpression(obj, features = pull(orthologDF[speciesGeneName]), group.by = groupByIdent, return.seurat = FALSE, assays = "RNA")
   # convert to dense matrix 
   pseudobulked <- pseudobulked$RNA %>% as.matrix()
   # remove zero counts 
-  pseudobulked <- pseudobulked[rowSums(pseudobulked)>0, ] 
+  pseudobulked <- pseudobulked[rowSums(pseudobulked)>0, ] %>% as.data.frame()
+  names(pseudobulked) <- datasetID
   # convert to human ortholog
-  speciesGeneName <- paste(species, "gene.name", sep = ".")
-  orthologDF %>%
-    select(gene.name) %>%
-    select(all_of(speciesGeneName)) -> orthologDF
-  pseudobulked <- pseudobulked %>% as.data.frame()
   pseudobulked[speciesGeneName] <- rownames(pseudobulked)
   pseudobulked <- inner_join(pseudobulked, orthologDF) 
   pseudobulked %>%
-    select(-all_of(speciesGeneName))
+    select(all_of(datasetID), gene.name) -> pseudobulked
+  return(pseudobulked)
 }

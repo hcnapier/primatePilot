@@ -3,6 +3,8 @@
 # October 3, 2025
 # Hailey Napier
 
+# RUN ON DCC
+
 # 0.0 Setup ----
 ## 0.1 Load packages ----
 require(Seurat)
