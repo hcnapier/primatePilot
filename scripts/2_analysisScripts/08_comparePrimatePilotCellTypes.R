@@ -61,8 +61,8 @@ for(currSpecies in speciesNames){
 ## 3.1 Convert sparse matrix to dense matrix 
 noGarbage_pseudobulk <- lapply(noGarbage_pseudobulk, as.matrix)
 for(currSpecies in speciesNames){
- # colsOrdered <- sort(colnames(noGarbage_pseudobulk[[currSpecies]]))
- # noGarbage_pseudobulk[[currSpecies]] <- noGarbage_pseudobulk[[currSpecies]][, colsOrdered]
+  colsOrdered <- sort(colnames(noGarbage_pseudobulk[[currSpecies]]))
+  noGarbage_pseudobulk[[currSpecies]] <- noGarbage_pseudobulk[[currSpecies]][, colsOrdered]
   colnames(noGarbage_pseudobulk[[currSpecies]]) <- paste(colnames(noGarbage_pseudobulk[[currSpecies]]), currSpecies, sep = "_")
 }
 
@@ -107,9 +107,10 @@ names(melted_cormat_h1h2) <- c("Human1", "Human2", "value")
 h1vsh2_corPlot <- ggplot(data = melted_cormat_h1h2, aes(Human1, Human2, fill = value))+
   geom_tile(color = "white")+
   scale_fill_gradient2(low = "blue", high = "red", mid = "white", 
-                       midpoint = 0, limit = c(-1,1), space = "Lab", 
+                       midpoint = 0.5, limit = c(0,1), space = "Lab", 
                        name="Pearson\nCorrelation") +
   theme_minimal()+ 
   theme(axis.text.x = element_text(angle = 45, vjust = 1, 
                                    size = 12, hjust = 1))+
   coord_fixed()
+h1vsh2_corPlot
