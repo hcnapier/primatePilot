@@ -46,7 +46,7 @@ humanPCs_merged <- humanPCs_merged %>%
   FindNeighbors(reduction = "inmfNorm", dims = 1:17) %>%
   FindClusters()
 DimPlot(humanPCs_merged, group.by = "seurat_clusters", pt.size = 4)
-DimPlot(humanPCs_merged, group.by = "sample")
+DimPlot(humanPCs_merged, group.by = "sample", pt.size = 4)
 
 # 2.0 Look at metadata ----
 humanPCs_merged$nCount_RNA %>% mean()

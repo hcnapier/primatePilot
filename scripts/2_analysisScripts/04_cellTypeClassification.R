@@ -712,6 +712,10 @@ top10NoGarbage[['mouse']] %>% filter(gene == "Eomes")
 noGarbageMarkers[['human1']] %>% filter(gene == "SLC1A3")
 
 ## Assign new cluster IDs
+Idents(noGarbage[["human1"]]) <- "MULTI_ID"
+DimPlot(noGarbage[["human1"]])
+Idents(noGarbage[["human1"]]) <- "seurat_clusters"
+DimPlot(noGarbage[["human1"]])
 newIDs_human1 <- c("Granule", 
                    "MLI1", 
                    "MLI2",
@@ -726,32 +730,32 @@ newIDs_human1 <- c("Granule",
                    "Purkinje")
 names(newIDs_human1) <- levels(noGarbage[['human1']])
 noGarbage[['human1']] <- RenameIdents(noGarbage[['human1']], newIDs_human1)
-DimPlot(noGarbage[['human1']], reduction = 'umap', label = F)
+DimPlot(noGarbage[['human1']], reduction = 'umap', label = T, repel = F, label.size = 4)
 Idents(noGarbage[["human2"]]) <- "seurat_clusters"
 newIDs_human2 <- c("Granule", 
-                   "MLI2", 
-                   "MLI1", 
+                   "MLI 2", 
+                   "MLI 1", 
                    "Granule", 
-                   "MLI1", 
+                   "MLI 1", 
                    "Bergmann", 
                    "Golgi", 
-                   "MLI2", 
-                   "MLI1", 
-                   "UBC",
+                   "MLI 2", 
+                   "MLI 1", 
+                   "UBC ",
                    "ODC",
                    "PLI", 
                    "Purkinje", 
                    "Golgi")
 names(newIDs_human2) <- levels(noGarbage[['human2']])
 noGarbage[['human2']] <- RenameIdents(noGarbage[['human2']], newIDs_human2)
-DimPlot(noGarbage[['human2']], reduction = 'umap', label = F)
-newIDs_rhesus <- c("MLI2", 
-                   "MLI1", 
+DimPlot(noGarbage[['human2']], reduction = 'umap', label = T, repel = F, label.size = 4)
+newIDs_rhesus <- c("MLI 2", 
+                   "MLI 1", 
                    "UBC", 
                    "Bergmann", 
-                   "MLI1", 
+                   "MLI 1", 
                    "Golgi", 
-                   "MLI2", 
+                   "MLI 2", 
                    "Golgi", 
                    "Granule", 
                    "PLI", 
@@ -760,11 +764,11 @@ newIDs_rhesus <- c("MLI2",
                    "OPC")
 names(newIDs_rhesus) <- levels(noGarbage[['rhesus']])
 noGarbage[['rhesus']] <- RenameIdents(noGarbage[['rhesus']], newIDs_rhesus)
-DimPlot(noGarbage[['rhesus']], reduction = 'umap', label = T)
+DimPlot(noGarbage[['rhesus']], reduction = 'umap', label = T, repel = F, label.size = 4)
 Idents(noGarbage[["mouse"]]) <- "seurat_clusters"
-newIDs_mouse <- c("MLI1", 
-                  "MLI2", 
-                  "MLI1", 
+newIDs_mouse <- c("MLI 1", 
+                  "MLI 2", 
+                  "MLI 1", 
                   "Purkinje", 
                   "Bergmann", 
                   "Golgi", 
@@ -781,7 +785,42 @@ newIDs_mouse <- c("MLI1",
                   "Endo. Stalk")
 names(newIDs_mouse) <- levels(noGarbage[['mouse']])
 noGarbage[['mouse']] <- RenameIdents(noGarbage[['mouse']], newIDs_mouse)
-DimPlot(noGarbage[['mouse']], reduction = 'umap', label = T)
+DimPlot(noGarbage[['mouse']], reduction = 'umap', label = T, repel = F, label.size = 4.5)
+
+# HTO classification by cell type ----
+## mouse (1,2,3,4)
+noGarbage[["mouse"]]@meta.data$cellType <- Idents(noGarbage[["mouse"]])
+cellTypeHTOs_mouse <- table(noGarbage[["mouse"]]$cellType, noGarbage[["mouse"]]$MULTI_ID)
+cellTypeHTOs_mouse %>% colnames
+colnames(cellTypeHTOs_mouse)[2:5] <- c("Gate 1", "Gate 2", "Gate 3", "Gate 4")
+sortedColNames <- cellTypeHTOs_mouse %>% colnames() %>% sort()
+sortedRowNames <- cellTypeHTOs_mouse %>% rownames() %>% sort()
+cellTypeHTOs_mouse <- cellTypeHTOs_mouse[sortedRowNames,sortedColNames]
+cellTypeHTOs_mouse[,2:5] %>% heatmap(Colv = NA, Rowv = NA)
+## rhesus (5,6,7,8)
+noGarbage[["rhesus"]]@meta.data$cellType <- Idents(noGarbage[["rhesus"]])
+cellTypeHTOs_rhesus <- table(noGarbage[["rhesus"]]$cellType, noGarbage[["rhesus"]]$MULTI_ID)
+colnames(cellTypeHTOs_rhesus)[6:9] <- c("Gate 1", "Gate 2", "Gate 3", "Gate 4")
+sortedColNames <- cellTypeHTOs_rhesus %>% colnames() %>% sort()
+sortedRowNames <- cellTypeHTOs_rhesus %>% rownames() %>% sort()
+cellTypeHTOs_rhesus <- cellTypeHTOs_rhesus[sortedRowNames,sortedColNames]
+cellTypeHTOs_rhesus[,2:5] %>% heatmap(Colv = NA, Rowv = NA)
+## human 1 (1,2,3,4)
+noGarbage[["human1"]]@meta.data$cellType <- Idents(noGarbage[["human1"]])
+cellTypeHTOs_human1 <- table(noGarbage[["human1"]]$cellType, noGarbage[["human1"]]$MULTI_ID)
+colnames(cellTypeHTOs_human1)[2:5] <- c("Gate 1", "Gate 2", "Gate 3", "Gate 4")
+sortedColNames <- cellTypeHTOs_human1 %>% colnames() %>% sort()
+sortedRowNames <- cellTypeHTOs_human1 %>% rownames() %>% sort()
+cellTypeHTOs_human1 <- cellTypeHTOs_human1[sortedRowNames,sortedColNames]
+cellTypeHTOs_human1[,2:5] %>% heatmap(Colv = NA, Rowv = NA)
+## human 2 (5,6,7,8)
+noGarbage[["human2"]]@meta.data$cellType <- Idents(noGarbage[["human2"]])
+cellTypeHTOs_human2 <- table(noGarbage[["human2"]]$cellType, noGarbage[["human2"]]$MULTI_ID)
+colnames(cellTypeHTOs_human2)[6:9] <- c("Gate 1", "Gate 2", "Gate 3", "Gate 4")
+sortedColNames <- cellTypeHTOs_human2 %>% colnames() %>% sort()
+sortedRowNames <- cellTypeHTOs_human2 %>% rownames() %>% sort()
+cellTypeHTOs_human2 <- cellTypeHTOs_human2[sortedRowNames,sortedColNames]
+cellTypeHTOs_human2[,2:5] %>% heatmap(Colv = NA, Rowv = NA)
 
 # Save Objects ----
 setwd("~/Work/VertGenLab/Projects/zebrinEvolution/Code/primatePilot/data/seuratObjs")
