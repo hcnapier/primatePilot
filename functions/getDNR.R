@@ -10,8 +10,10 @@ source("~/Work/VertGenLab/Projects/zebrinEvolution/Code/primatePilot/functions/r
 require(dplyr)
 
 getDNR <- function(countMat){
-  # remove genes with only zero counts 
-  countMat <- countMat %>% removeZeroRowsCols()
+  dnrOut <- countMat %>% rownames() %>% as.data.frame()
+  names(dnrOut) <- "gene"
+  dnrOut$dnr <- NA
+  countMat <- countMat %>% removeZeroRowsCols() # remove genes with only zero counts 
   for(currGene in countMat %>% rownames()){
     max <- countMat[currGene,] %>% max()
     min <- countMat[currGene,] %>% min()
@@ -19,5 +21,7 @@ getDNR <- function(countMat){
       min = unique(sort(countMat[currGene,]))[[2]]
     }
     dnr <- log10(min/max)
+    dnrOut$dnr[which(dnrOut$gene == currGene)] <- dnr
   }
+  return(dnrOut)
 }
