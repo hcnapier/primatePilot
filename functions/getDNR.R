@@ -20,7 +20,7 @@ getDNR <- function(countMat){
     if(min == 0){ # ignore zeros
       min = unique(sort(countMat[currGene,]))[[2]]
     }
-    dnr <- log10(min/max)
+    dnr <- log10(max/min)
     dnrOut$dnr[which(dnrOut$gene == currGene)] <- dnr
   }
   return(dnrOut)
