@@ -13,6 +13,8 @@ require(reshape2)
 setwd("~/Work/VertGenLab/Projects/zebrinEvolution/Code/primatePilot/functions")
 source("pseudobulkHumanOrtholog.R")
 source("getOrthologCountMat.R")
+source("mergeCountMats.R")
+source("getDNR.R")
 
 ## 0.2 Setup one to one orthologs ----
 setwd("/Users/haileynapier/Work/VertGenLab/Projects/zebrinEvolution/Data/geneLists/orthologs")
@@ -22,6 +24,7 @@ allPrimateOrthologs %>%
   filter(macaque.homology.type == "ortholog_one2one") %>%
   filter(mouse.homology.type == "ortholog_one2one") %>%
   filter(white.tufted.ear.marmoset.homology.type == "ortholog_one2one") %>%
+  filter(gene.name != "") %>%
   distinct() -> allPrimateOrthologs
 
 ## 0.3 Setup primate pilot data ----
@@ -110,7 +113,10 @@ pseudobulkMerged_pcs <- inner_join(pseudobulkMerged_pcs, pseudobulk_barteltMouse
 rownames(pseudobulkMerged_pcs) <- pseudobulkMerged_pcs$gene.name
 pseudobulkMerged_pcs$gene.name <- NULL
 pseudobulkMerged_pcs %>% as.matrix() -> pseudobulkMerged_pcs
-
+rm(pseudobulk_haoRhesus)
+rm(pseudobulk_haoMarmoset)
+rm(pseudobulk_haoMarmoset_clean)
+rm(pseudobulk_barteltMousePCs)
 
 # 1.0 Pairwise Pearson correlations ----
 crossDatasetPCCormat <- cor(pseudobulkMerged_pcs)
@@ -127,7 +133,39 @@ crossDatasetPC_corPlot <- ggplot(data = melted_crossDatasetPCCormat, aes(Var1, V
 crossDatasetPC_corPlot
 
 
-# 2.0 Dynamic range within speices 
+# 2.0 Dynamic range across species ----
+## 2.1 All PCs ----
+### 2.1.1 Get ortholog count matrices for primate pilot data ----
+rhesusPCs <- noGarbage[['rhesus']] %>% subset(idents = "Purkinje")
+countMat_pilotRhesus_pc <- getOrthologCountMat(rhesusPCs,
+                                             allPrimateOrthologs, 
+                                             "macaque")
+mousePCs <- noGarbage[['mouse']] %>% subset(idents = "Purkinje")
+countMat_pilotMouse_pc <- getOrthologCountMat(mousePCs,
+                                              allPrimateOrthologs,
+                                              "mouse")
+human1PCs <- noGarbage[['human1']] %>% subset(idents = "Purkinje")
+countMat_pilotHuman1_pcs <- human1PCs@assays$RNA$counts %>% as.matrix()
+human2PCs <- noGarbage[['human2']] %>% subset(idents = "Purkinje")
+countMat_pilotHuman2_pcs <- human2PCs@assays$RNA$counts %>% as.matrix()
+
+### 2.1.2 Merge count mats for all species for all PCs (excluding Hao Marmoset because it's weird)
+mergedMats <- mergeCountMats(list(countMat_pilotHuman1_pcs, 
+                                  countMat_pilotHuman2_pcs, 
+                                  countMat_pilotRhesus_pc, 
+                                  countMat_pilotMouse_pc, 
+                                  countMat_barteltMouse_pc, 
+                                  countMat_haoRhesus_pc))
+### 2.1.3 Get DNR for all PCs across all species
+dnr_AllPCs_AcrossSpecies <- getDNR(mergedMats)
+range(dnr_AllPCs_AcrossSpecies$dnr, na.rm = T)
+hist(dnr_AllPCs_AcrossSpecies$dnr)
+
+## 2.2 Z+ PCs
+
+
+## 2.3 Z- PCs
 
 
 # 3.0 Dynamic range across species 
+
