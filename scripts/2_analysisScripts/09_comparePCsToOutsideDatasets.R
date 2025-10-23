@@ -159,6 +159,12 @@ mergedMats <- mergeCountMats(list(countMat_pilotHuman1_pcs,
                                   countMat_pilotMouse_pc, 
                                   countMat_barteltMouse_pc, 
                                   countMat_haoRhesus_pc))
+rm(countMat_pilotHuman1_pcs)
+rm(countMat_pilotHuman2_pcs)
+rm(countMat_barteltMouse_pc)
+rm(countMat_haoMarmoset_pc)
+rm(countMat_haoMarmoset_pc_clean)
+rm(countMat_haoRhesus_pc)
 ### 2.1.3 Get DNR for all PCs across all species ----
 dnr_AllPCs_AcrossSpecies <- getDNR(mergedMats)
 range(dnr_AllPCs_AcrossSpecies$dnr, na.rm = T)
@@ -180,7 +186,7 @@ barteltMousePCs <- barteltMousePCs %>%
 DimPlot(barteltMousePCs, pt.size = 2)
 FeaturePlot(barteltMousePCs, features = c("Grid2", "Plcb4", "Aldoc"))
 VlnPlot(barteltMousePCs, features = c("Grid2", "Plcb4", "Aldoc"))
-barteltMousePCs_zPos <- barteltMousePCs %>% subset(idents = c(3,1))
+barteltMousePCs_zPos <- barteltMousePCs %>% subset(idents = c(3))
 barteltMousePCs_zNeg <- barteltMousePCs %>% subset(idents = c(0,2,5))
 pseudobulk_bartelt_zPos <- pseudobulkHumanOrtholog(barteltMousePCs_zPos, 
                                                    orthologDF = allPrimateOrthologs, 
@@ -196,7 +202,7 @@ pseudobulk_bartelt_zNeg <- pseudobulkHumanOrtholog(barteltMousePCs_zNeg,
 setwd("~/Work/VertGenLab/Projects/zebrinEvolution/Code/haoReanalysis/data/seuratObjs")
 haoRhesus <- readRDS("macaqueSingleCellPC.rds")
 haoRhesus_zPos <- haoRhesus %>% 
-  subset(idents = c(0,3))
+  subset(idents = c(3))
 haoRhesus_zNeg <- haoRhesus %>% 
   subset(idents = c(1,2))
 rm(haoRhesus)
@@ -308,13 +314,24 @@ pcSubtype_corPlot
 
 ## 3.3 DNR Z+ ----
 ### 3.3.1 Get single cell count matrices
-human1PCs_zPos_countMat <- humanPCs_zPos@assays$RNA$counts.1 %>% as.matrix()
-human2PCs_zPos_countMat <- humanPCs_zPos@assays$RNA$counts.2 %>% as.matrix()
-humanPCs_zPos_countMat <- merge(human1PCs_zPos_countMat, human2PCs_zPos_countMat)
+human1PCs_zPos_countMat <- humanPCs_zPos@assays$RNA$counts.1 
+human2PCs_zPos_countMat <- humanPCs_zPos@assays$RNA$counts.2
+humanPCs_zPos_countMat <- mergeCountMats(list(human1PCs_zPos_countMat, human2PCs_zPos_countMat)) 
 haoRhesus_zPos_countMat <- getOrthologCountMat(haoRhesus_zPos, 
                                                allPrimateOrthologs,
                                                "macaque")
-barteltMousePCs_zPos
+barteltMousePCs_zPos_countMat <- getOrthologCountMat(barteltMousePCs_zPos, 
+                                            allPrimateOrthologs, 
+                                            "mouse")
+mousePCs_zPos_countMat <- getOrthologCountMat(mousePCs_zPos, 
+                                              allPrimateOrthologs, 
+                                              "mouse")
+zPos_countMat <- mergeCountMats(list(humanPCs_zPos_countMat, 
+                                     haoRhesus_zPos_countMat, 
+                                     barteltMousePCs_zPos_countMat, 
+                                     mousePCs_zPos_countMat))
+zPos_dnr <- getDNR(zPos_countMat)
+hist(zPos_dnr$dnr)
 
 ## 3.4 DNR Z- ----
 
