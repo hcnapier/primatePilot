@@ -166,9 +166,13 @@ rm(countMat_haoMarmoset_pc)
 rm(countMat_haoMarmoset_pc_clean)
 rm(countMat_haoRhesus_pc)
 ### 2.1.3 Get DNR for all PCs across all species ----
+# Single cells
 dnr_AllPCs_AcrossSpecies <- getDNR(mergedMats)
 range(dnr_AllPCs_AcrossSpecies$dnr, na.rm = T)
 hist(dnr_AllPCs_AcrossSpecies$dnr)
+# Pseudobulked
+pseudobulkAllPCs_dnr <- getDNR(pseudobulkMerged_pcs)
+hist(pseudobulkAllPCs_dnr$dnr)
 
 
 # 3.0 DNR PC subtypes ----
@@ -333,6 +337,61 @@ zPos_countMat <- mergeCountMats(list(humanPCs_zPos_countMat,
 zPos_dnr <- getDNR(zPos_countMat)
 hist(zPos_dnr$dnr)
 
+pseudobulked_zPos_dnr <- getDNR(pseudobulk_zPos)
+hist(pseudobulked_zPos_dnr$dnr)
+
 ## 3.4 DNR Z- ----
+human1PCs_zNeg_countMat <- humanPCs_zNeg@assays$RNA$counts.1 
+human2PCs_zNeg_countMat <- humanPCs_zNeg@assays$RNA$counts.2
+humanPCs_zNeg_countMat <- mergeCountMats(list(human1PCs_zNeg_countMat, human2PCs_zNeg_countMat)) 
+haoRhesus_zNeg_countMat <- getOrthologCountMat(haoRhesus_zNeg, 
+                                               allPrimateOrthologs,
+                                               "macaque")
+barteltMousePCs_zNeg_countMat <- getOrthologCountMat(barteltMousePCs_zNeg, 
+                                                     allPrimateOrthologs, 
+                                                     "mouse")
+mousePCs_zNeg_countMat <- getOrthologCountMat(mousePCs_zNeg, 
+                                              allPrimateOrthologs, 
+                                              "mouse")
+zNeg_countMat <- mergeCountMats(list(humanPCs_zNeg_countMat, 
+                                     haoRhesus_zNeg_countMat, 
+                                     barteltMousePCs_zNeg_countMat, 
+                                     mousePCs_zNeg_countMat))
+zNeg_dnr <- getDNR(zNeg_countMat)
+hist(zNeg_dnr$dnr)
+
+pseudobulked_zNeg_dnr <- getDNR(pseudobulk_zNeg)
+hist(pseudobulked_zNeg_dnr$dnr)
+
+# 4.0 Standard deviation by subtype across species ----
+## 4.1 Z- ----
+zNegSD <- getNonZeroSD(zNeg_countMat)
+zNegSD[zNegSD != 0] %>% hist(breaks = 700)
+range(zNegSD, na.rm=T)
+sort(zNegSD, decreasing = T) %>% head()
+
+## 4.2 Z+ ----
+zPosSD <- getNonZeroSD(zPos_countMat)
+zPosSD[zPosSD != 0] %>% hist(breaks = 700)
+range(zPosSD, na.rm=T)
+sort(zPosSD, decreasing = T) %>% head()
 
 
+# 5.0 Mean normalized variance by subtype across species ----
+## 5.1 Z- ----
+zNegVar <- meanNormVar(zNeg_countMat)
+zNegVar[zNegVar != 0] %>% hist(breaks = 700)
+range(zNegVar, na.rm = T)
+sort(zNegVar, decreasing = T) %>% head()
+zNegVar_log <- log(zNegVar)
+hist(zNegVar_log)
+sort(zNegVar_log, decreasing = T) %>% head()
+
+## 5.2 Z+ ----
+zPosVar <- meanNormVar(zPos_countMat)
+zPosVar[zPosVar != 0] %>% hist(breaks = 700)
+range(zPosVar, na.rm = T)
+sort(zPosVar, decreasing = T) %>% head()
+zPosVar_log <- log(zPosVar)
+hist(zPosVar_log)
+sort(zPosVar_log, decreasing = T) %>% head()
