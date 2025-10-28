@@ -9,12 +9,16 @@ require(Seurat)
 require(dplyr)
 require(ggplot2)
 require(reshape2)
+require(clusterProfiler)
+require(org.Hs.eg.db)
 
 setwd("~/Work/VertGenLab/Projects/zebrinEvolution/Code/primatePilot/functions")
 source("pseudobulkHumanOrtholog.R")
 source("getOrthologCountMat.R")
 source("mergeCountMats.R")
 source("getDNR.R")
+source("meanNormVar.R")
+source("getNonZeroSD.R")
 
 ## 0.2 Setup one to one orthologs ----
 setwd("/Users/haileynapier/Work/VertGenLab/Projects/zebrinEvolution/Data/geneLists/orthologs")
@@ -208,7 +212,7 @@ haoRhesus <- readRDS("macaqueSingleCellPC.rds")
 haoRhesus_zPos <- haoRhesus %>% 
   subset(idents = c(3))
 haoRhesus_zNeg <- haoRhesus %>% 
-  subset(idents = c(1,2))
+  subset(idents = c(1))
 rm(haoRhesus)
 pseudobulk_haoRhesus_zNeg <- pseudobulkHumanOrtholog(haoRhesus_zNeg, 
                                                      orthologDF = allPrimateOrthologs, 
@@ -250,7 +254,7 @@ VlnPlot(mousePCs, features = c("Aldoc", "Grid2", "Plcb4"))
 mousePCs_zPos <- mousePCs %>%
   subset(idents = 3)
 mousePCs_zNeg <- mousePCs %>%
-  subset(idents = c(0,1,2))
+  subset(idents = c(2))
 pseudobulk_pilotMousePCs_zPos <- pseudobulkHumanOrtholog(mousePCs_zPos, 
                                                          orthologDF = allPrimateOrthologs, 
                                                          species = "mouse", 
@@ -363,35 +367,196 @@ hist(zNeg_dnr$dnr)
 pseudobulked_zNeg_dnr <- getDNR(pseudobulk_zNeg)
 hist(pseudobulked_zNeg_dnr$dnr)
 
+
 # 4.0 Standard deviation by subtype across species ----
 ## 4.1 Z- ----
 zNegSD <- getNonZeroSD(zNeg_countMat)
-zNegSD[zNegSD != 0] %>% hist(breaks = 700)
+zNegSD[zNegSD != 0] %>% hist(breaks = 700, main = "Z- PC SD Across Species", xlab = "SD of gene expression in Z- PCs across species")
+zNegSD[zNegSD != 0] %>% log() %>% hist(main = "Z- PC SD Across Species, log transformed",  xlab = "log(SD) of gene expression in Z- PCs across species")
 range(zNegSD, na.rm=T)
-sort(zNegSD, decreasing = T) %>% head()
+sort(zNegSD, decreasing = T) %>% head(n = 10)
 
 ## 4.2 Z+ ----
 zPosSD <- getNonZeroSD(zPos_countMat)
-zPosSD[zPosSD != 0] %>% hist(breaks = 700)
+zPosSD[zPosSD != 0] %>% hist(breaks = 700, main = "Z+ PC SD Across Species", xlab = "SD of gene expression in Z+ PCs across species")
+zPosSD[zNegSD != 0] %>% log() %>% hist(main = "Z+ PC SD Across Species, log transformed",  xlab = "log(SD) of gene expression in Z+ PCs across species")
 range(zPosSD, na.rm=T)
-sort(zPosSD, decreasing = T) %>% head()
+sort(zPosSD, decreasing = T) %>% head(n = 10)
 
 
 # 5.0 Mean normalized variance by subtype across species ----
 ## 5.1 Z- ----
 zNegVar <- meanNormVar(zNeg_countMat)
-zNegVar[zNegVar != 0] %>% hist(breaks = 700)
+zNegVar[zNegVar != 0] %>% 
+  hist(breaks = 700, main = "Normalized Variance in Z- PCs Across Species", xlab = "variance/mean gene expression in Z- PCs across species")
 range(zNegVar, na.rm = T)
-sort(zNegVar, decreasing = T) %>% head()
-zNegVar_log <- log(zNegVar)
-hist(zNegVar_log)
-sort(zNegVar_log, decreasing = T) %>% head()
+sort(zNegVar, decreasing = T) %>% head(n = 10)
+zNegVar_log <- zNegVar[zNegVar != 0] %>% log()
+hist(zNegVar_log, main = "Normalized Variance in Z- PCs Across Species", xlab = "Variance/Mean gene expression in Z- PCs across species")
+sort(zNegVar_log, decreasing = T) %>% head(n = 10)
 
 ## 5.2 Z+ ----
 zPosVar <- meanNormVar(zPos_countMat)
-zPosVar[zPosVar != 0] %>% hist(breaks = 700)
+zPosVar[zPosVar != 0] %>% hist(breaks = 700, main = "Normalized Variance in Z+ PCs Across Species", xlab = "variance/mean gene expression in Z+ PCs across species")
 range(zPosVar, na.rm = T)
-sort(zPosVar, decreasing = T) %>% head()
-zPosVar_log <- log(zPosVar)
-hist(zPosVar_log)
+sort(zPosVar, decreasing = T) %>% head(n = 10)
+zPosVar_log <- zPosVar[zPosVar != 0] %>% log()
+hist(zPosVar_log, main = "Normalized Variance in Z- PCs Across Species", xlab = "Variance/Mean gene expression in Z- PCs across species")
 sort(zPosVar_log, decreasing = T) %>% head()
+
+# Mean mean normalized variance across species ----
+mergedVar_acrSpecies <- mergeVectors(list(zPosVar, zNegVar), list("zPos", "zNeg")) %>%
+  na.omit()
+meanNormVar_acrSpecies <- apply(mergedVar_acrSpecies, MARGIN = 1, mean)
+hist(log(meanNormVar_acrSpecies))
+
+# 6.0 Mean normalized variance by species across subtypes ----
+## 6.1 Human ----
+humanPCs_countMat <- mergeCountMats(list(humanPCs_zNeg_countMat, humanPCs_zPos_countMat))
+humanVar <- meanNormVar(humanPCs_countMat)
+range(humanVar, na.rm = T)
+sort(humanVar, decreasing = T) %>% head(n = 10)
+humanVar_log <- log(humanVar)
+hist(humanVar_log)
+
+## 6.2 Rhesus ----
+rhesusPCs_countMat <- mergeCountMats(list(haoRhesus_zNeg_countMat,haoRhesus_zPos_countMat))
+rhesusVar <- meanNormVar(rhesusPCs_countMat)
+range(rhesusVar, na.rm = T)
+sort(rhesusVar, decreasing = T) %>% head(n = 10)
+rhesusVar_log <- log(rhesusVar)
+hist(rhesusVar_log)
+
+## 6.3 Mouse ----
+mousePCs_countMat <- mergeCountMats(list(barteltMousePCs_zNeg_countMat, barteltMousePCs_zPos_countMat, mousePCs_zNeg_countMat, mousePCs_zPos_countMat))
+mouseVar <- meanNormVar(mousePCs_countMat)
+range(mouseVar, na.rm = T)
+sort(mouseVar, decreasing = T) %>% head(n = 10)
+mouseVar_log <- log(mouseVar)
+hist(mouseVar_log)
+
+## 6.4 Mean mean normalized variance across subtypes ----
+mergedVar_acrSubtypes <- mergeVectors(list(mouseVar, humanVar, rhesusVar), list("mouse", "human", "rhesus")) %>%
+  na.omit()
+meanNormVar_acrSubtypes <- apply(mergedVar_acrSubtypes, MARGIN = 1, mean)
+
+
+# 7.0 Explore average normalized variances across species and subtypes ----
+## 7.1 Plot ----
+avg_normVars <- mergeVectors(list(meanNormVar_acrSpecies, meanNormVar_acrSubtypes), list("AcrossSpecies", "AcrossSubtypes")) %>%
+  filter(AcrossSpecies > 0) %>%
+  filter(AcrossSubtypes > 00)
+ggplot(data = avg_normVars, aes(x = AcrossSpecies, y = AcrossSubtypes)) + 
+  geom_point() + 
+  theme_minimal() +
+  ggtitle("Average Normalized Variance in Gene Expression")
+  
+# Log transformed 
+avg_normVars %>% log() %>% arrange(desc(AcrossSpecies)) %>% head(n = 20)
+avg_normVars %>% log() %>% arrange(desc(AcrossSpecies)) %>% tail(n = 20)
+ggplot(data = log(avg_normVars), aes(x = AcrossSpecies, y = AcrossSubtypes)) + 
+  geom_point() + 
+  theme_minimal() +
+  ggtitle("Log Transformed Average Normalized Variance in Gene Expression")
+
+## 7.2 GO terms -----
+### Get entrez IDs for all genes ----
+pcEntrez <- bitr(rownames(avg_normVars), fromType = "SYMBOL", toType = "ENTREZID", OrgDb = "org.Hs.eg.db")
+
+### Lowest variance ----
+lowestVar <- avg_normVars %>% 
+  log() %>%
+  filter(AcrossSubtypes < -1.5) %>%
+  filter(AcrossSpecies < -2.5)
+lowestVarEntrez<- bitr(rownames(lowestVar), fromType = "SYMBOL", toType = "ENTREZID", OrgDb = "org.Hs.eg.db")
+
+lowestVarGO_bp <- enrichGO(as.character(lowestVarEntrez$ENTREZID), 
+                      OrgDb = org.Hs.eg.db,
+                      ont = 'BP',
+                      keyType = "ENTREZID", 
+                      universe = as.character(pcEntrez$ENTREZID),
+                      qvalueCutoff = 0.5, 
+                      pvalueCutoff = 0.5)
+clusterProfiler::dotplot(lowestVarGO_bp)
+
+lowestVarGO_mf <- enrichGO(as.character(lowestVarEntrez$ENTREZID), 
+                           OrgDb = org.Hs.eg.db,
+                           ont = 'MF',
+                           keyType = "ENTREZID", 
+                           universe = as.character(pcEntrez$ENTREZID),
+                           qvalueCutoff = 0.5, 
+                           pvalueCutoff = 0.5)
+clusterProfiler::dotplot(lowestVarGO_mf)
+
+### Low variance ----
+lowVar <- avg_normVars %>% 
+  log() %>%
+  filter(AcrossSubtypes < 0) %>%
+  filter(AcrossSpecies < 0)
+lowVarEntrez<- bitr(rownames(lowVar), fromType = "SYMBOL", toType = "ENTREZID", OrgDb = "org.Hs.eg.db")
+
+lowVarGO_bp <- enrichGO(as.character(lowVarEntrez$ENTREZID), 
+                           OrgDb = org.Hs.eg.db,
+                           ont = 'BP',
+                           keyType = "ENTREZID", 
+                           universe = as.character(pcEntrez$ENTREZID),
+                           qvalueCutoff = 0.5, 
+                           pvalueCutoff = 0.5)
+clusterProfiler::dotplot(lowVarGO_bp)
+
+lowVarGO_mf <- enrichGO(as.character(lowVarEntrez$ENTREZID), 
+                        OrgDb = org.Hs.eg.db,
+                        ont = 'MF',
+                        keyType = "ENTREZID", 
+                        universe = as.character(pcEntrez$ENTREZID),
+                        qvalueCutoff = 0.5, 
+                        pvalueCutoff = 0.5)
+clusterProfiler::dotplot(lowVarGO_mf)
+
+### High variance ----
+hiVar <- avg_normVars %>% 
+  log() %>%
+  filter(AcrossSubtypes > 0) %>%
+  filter(AcrossSpecies > 0)
+hiVarEntrez<- bitr(rownames(hiVar), fromType = "SYMBOL", toType = "ENTREZID", OrgDb = "org.Hs.eg.db")
+hiVarGO_bp <- enrichGO(as.character(hiVarEntrez$ENTREZID), 
+                        OrgDb = org.Hs.eg.db,
+                        ont = 'BP',
+                        keyType = "ENTREZID", 
+                        universe = as.character(pcEntrez$ENTREZID),
+                        qvalueCutoff = 0.5, 
+                        pvalueCutoff = 0.5)
+clusterProfiler::dotplot(hiVarGO_bp)
+
+hiVarGO_mf <- enrichGO(as.character(hiVarEntrez$ENTREZID), 
+                       OrgDb = org.Hs.eg.db,
+                       ont = 'MF',
+                       keyType = "ENTREZID", 
+                       universe = as.character(pcEntrez$ENTREZID),
+                       qvalueCutoff = 0.5, 
+                       pvalueCutoff = 0.5)
+clusterProfiler::dotplot(hiVarGO_mf)
+
+### Highest variance ----
+highestVar <- avg_normVars %>% 
+  log() %>%
+  filter(AcrossSubtypes > 1.5) %>%
+  filter(AcrossSpecies > 1)
+highestVarEntrez<- bitr(rownames(highestVar), fromType = "SYMBOL", toType = "ENTREZID", OrgDb = "org.Hs.eg.db")
+highestVarGO_bp <- enrichGO(as.character(highestVarEntrez$ENTREZID), 
+                       OrgDb = org.Hs.eg.db,
+                       ont = 'BP',
+                       keyType = "ENTREZID", 
+                       universe = as.character(pcEntrez$ENTREZID),
+                       qvalueCutoff = 0.5, 
+                       pvalueCutoff = 0.5)
+clusterProfiler::dotplot(highestVarGO_bp)
+
+highestVarGO_mf <- enrichGO(as.character(highestVarEntrez$ENTREZID), 
+                            OrgDb = org.Hs.eg.db,
+                            ont = 'MF',
+                            keyType = "ENTREZID", 
+                            universe = as.character(pcEntrez$ENTREZID),
+                            qvalueCutoff = 0.5, 
+                            pvalueCutoff = 0.5)
+clusterProfiler::dotplot(highestVarGO_mf)
