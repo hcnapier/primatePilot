@@ -20,6 +20,6 @@ pseudobulkHumanOrtholog <- function(obj, groupByIdent = "ident", orthologDF, spe
   pseudobulked[speciesGeneName] <- rownames(pseudobulked)
   pseudobulked <- inner_join(pseudobulked, orthologDF) 
   pseudobulked %>%
-    select(all_of(datasetID), gene.name) -> pseudobulked
+    dplyr::select(all_of(datasetID), gene.name) -> pseudobulked
   return(pseudobulked)
 }

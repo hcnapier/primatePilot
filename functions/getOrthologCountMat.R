@@ -7,15 +7,24 @@
 require(Seurat)
 require(dplyr)
 
-getOrthologCountMat <- function(obj, orthologDF, species){
-  countMat <- obj@assays$RNA$counts
+source("~/Work/VertGenLab/Projects/zebrinEvolution/Code/primatePilot/functions/TPMNormalize.R")
+
+getOrthologCountMat <- function(obj, orthologDF, species, tpm = FALSE){
+  countMat <- obj@assays$RNA$counts # Extract raw count matrix
+  speciesGeneName <- paste(species, "gene.name", sep = ".")
+  if(tpm){
+    countMat <- countMat %>% as.matrix()
+    speciesColumns <- colnames(orthologDF)[which(str_detect(colnames(orthologDF), species))]
+    geneSizeDF <- orthologDF %>%
+      dplyr::select(all_of(speciesColumns))
+    countMat <- TPMNormalize(countMat, geneSizeDF)
+  }
   countMat %>% as.data.frame() -> countMat
   cellBxs <- colnames(countMat)
-  speciesGeneName <- paste(species, "gene.name", sep = ".")
   countMat[speciesGeneName] <- rownames(countMat)
   countMat <- inner_join(orthologDF, countMat)
   countMat %>%
-    select(all_of(cellBxs), gene.name) -> countMat
+    dplyr::select(all_of(cellBxs), gene.name) -> countMat
   rownames(countMat) <- countMat$gene.name
   countMat$gene.name <- NULL
   countMat %>% as.matrix() -> countMat
