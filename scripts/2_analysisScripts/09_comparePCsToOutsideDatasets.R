@@ -64,43 +64,11 @@ pseudobulk_haoRhesus <- pseudobulkHumanOrtholog(haoRhesus,
 countMat_haoRhesus_pc <- getOrthologCountMat(haoRhesus,
                                              allPrimateOrthologs, 
                                              "macaque", 
-                                             normMethod = "shiftedLog")
+                                             normMethod = "shiftedLog", 
+                                             useForL = 7208)
 rm(haoRhesus)
 countMat_haoRhesus_pc %>% colSums() %>% hist(main = "Hao Rhesus", xlab = "Read counts per cell", breaks = 14)
-
-## 0.5 Setup Hao marmoset data (not clean) ----
-# load data 
-setwd("~/Work/VertGenLab/Projects/zebrinEvolution/Code/haoReanalysis/data/seuratObjs")
-haoMarmoset <- readRDS("marmosetSingleCellPC.rds")
-# pseudobulk 
-pseudobulk_haoMarmoset <- pseudobulkHumanOrtholog(haoMarmoset, 
-                                                  groupByIdent = "doublet_info", 
-                                                  orthologDF = allPrimateOrthologs, 
-                                                  species = "white.tufted.ear.marmoset",
-                                                  datasetID = "Purkinje_marmoset_Hao_NOTCLEAN")
-# get count matrix in terms of human orthologs
-countMat_haoMarmoset_pc <- getOrthologCountMat(haoMarmoset, 
-                                               allPrimateOrthologs, 
-                                               "white.tufted.ear.marmoset", 
-                                               normMethod = "shiftedLog")
-rm(haoMarmoset)
-
-## 0.5 Setup Hao marmoset data (CLEAN) ----
-# load data 
-setwd("~/Work/VertGenLab/Projects/zebrinEvolution/Code/haoReanalysis/data/seuratObjs/cleaned")
-haoMarmoset_clean <- readRDS("haoMarmosetPCs_clean.rds")
-# pseudobulk 
-pseudobulk_haoMarmoset_clean <- pseudobulkHumanOrtholog(haoMarmoset_clean, 
-                                                  groupByIdent = "doublet_info", 
-                                                  orthologDF = allPrimateOrthologs, 
-                                                  species = "white.tufted.ear.marmoset",
-                                                  datasetID = "Purkinje_marmoset_Hao")
-# get count matrix in terms of human orthologs
-countMat_haoMarmoset_pc_clean <- getOrthologCountMat(haoMarmoset_clean, 
-                                                     allPrimateOrthologs, 
-                                                     "white.tufted.ear.marmoset", 
-                                                     normMethod = "shiftedLog")
-rm(haoMarmoset_clean)
+countMat_haoRhesus_pc %>% colSums() %>% mean()
 
 ## 0.6 Setup Bartelt mouse data ----
 # load data 
@@ -119,8 +87,10 @@ pseudobulk_barteltMousePCs <- pseudobulkHumanOrtholog(barteltMousePCs,
 countMat_barteltMouse_pc <- getOrthologCountMat(barteltMousePCs,
                                                 allPrimateOrthologs, 
                                                 "mouse", 
-                                                normMethod = "shiftedLog")
+                                                normMethod = "shiftedLog", 
+                                                useForL = 7208)
 countMat_barteltMouse_pc %>% colSums() %>% hist(main = "Bartelt Mouse", xlab = "Read counts per cell", breaks = 14)
+countMat_barteltMouse_pc %>% colSums() %>% mean()
 
 ## 0.6 Merge all pseudobulked DFs into one matrix ----
 pseudobulkMerged_pcs <- inner_join(pseudobulkMerged_pcs, pseudobulk_haoRhesus)
@@ -157,25 +127,31 @@ rhesusPCs <- noGarbage[['rhesus']] %>% subset(idents = "Purkinje")
 countMat_pilotRhesus_pc <- getOrthologCountMat(rhesusPCs,
                                              allPrimateOrthologs, 
                                              "macaque", 
-                                             normMethod = "shiftedLog")
+                                             normMethod = "shiftedLog", 
+                                             useForL = 7208)
 countMat_pilotRhesus_pc %>% colSums() %>% hist(main = "Pilot Rhesus", xlab = "Read counts per cell", breaks = 14)
+countMat_pilotRhesus_pc %>% colSums() %>% mean()
 
 mousePCs <- noGarbage[['mouse']] %>% subset(idents = "Purkinje")
 countMat_pilotMouse_pc <- getOrthologCountMat(mousePCs,
                                               allPrimateOrthologs,
                                               "mouse", 
-                                              normMethod = "shiftedLog")
+                                              normMethod = "shiftedLog", 
+                                              useForL = 7208)
 countMat_pilotMouse_pc %>% colSums() %>% hist(main = "Pilot Mouse", xlab = "Read counts per cell", breaks = 14)
+countMat_pilotMouse_pc %>% colSums() %>% mean()
 
 humanGeneDF <- allPrimateOrthologs %>%
   dplyr::select(c("gene.name", "gene.size"))
 human1PCs <- noGarbage[['human1']] %>% subset(idents = "Purkinje")
-countMat_pilotHuman1_pcs <- human1PCs@assays$RNA$counts %>% as.matrix() %>% shiftedLogNorm(pseudocount = 1, useForL = "meanReadDepth")
+countMat_pilotHuman1_pcs <- human1PCs@assays$RNA$counts %>% as.matrix() %>% shiftedLogNorm(pseudocount = 1, useForL = 7208)
 countMat_pilotHuman1_pcs %>% colSums() %>% hist(main = "Pilot Human1", xlab = "Read counts per cell")
+countMat_pilotHuman1_pcs %>% colSums() %>% mean()
 
 human2PCs <- noGarbage[['human2']] %>% subset(idents = "Purkinje")
-countMat_pilotHuman2_pcs <- human2PCs@assays$RNA$counts %>% as.matrix() %>% shiftedLogNorm(pseudocount = 1, useForL = "meanReadDepth")
+countMat_pilotHuman2_pcs <- human2PCs@assays$RNA$counts %>% as.matrix() %>% shiftedLogNorm(pseudocount = 1, useForL = 7208)
 countMat_pilotHuman2_pcs %>% colSums() %>% hist(main = "Pilot Human2", xlab = "Read counts per cell")
+countMat_pilotHuman2_pcs %>% colSums() %>% mean()
 
 ### 2.1.2 Merge count mats for all species for all PCs ----
 # (excluding Hao Marmoset because it's weird)
@@ -347,25 +323,33 @@ pcSubtype_corPlot
 
 ## 3.3 DNR Z+ ----
 ### 3.3.1 Get single cell count matrices
-human1PCs_zPos_countMat <- humanPCs_zPos@assays$RNA$counts.1 %>% as.matrix() %>% TPMNormalize(humanGeneDF)
-human2PCs_zPos_countMat <- humanPCs_zPos@assays$RNA$counts.2 %>% as.matrix() %>% TPMNormalize(humanGeneDF)
+human1PCs_zPos_countMat <- humanPCs_zPos@assays$RNA$counts.1 %>% as.matrix() %>% shiftedLogNorm(pseudocount = 1, useForL = 6687)
+human2PCs_zPos_countMat <- humanPCs_zPos@assays$RNA$counts.2 %>% as.matrix() %>% shiftedLogNorm(pseudocount = 1, useForL = 6687)
 humanPCs_zPos_countMat <- mergeCountMats(list(human1PCs_zPos_countMat, human2PCs_zPos_countMat)) 
+humanPCs_zPos_countMat %>% colSums() %>% hist(main = "Human Z+ PCs", xlab = "Read counts per cell")
 haoRhesus_zPos_countMat <- getOrthologCountMat(haoRhesus_zPos, 
                                                allPrimateOrthologs,
                                                "macaque", 
-                                               normMethod = "shiftedLog")
+                                               normMethod = "shiftedLog",
+                                               useForL = 6687)
+haoRhesus_zPos_countMat %>% colSums() %>% hist(main = "Hao Rhesus Z+ PCs", xlab = "Read counts per cell")
 barteltMousePCs_zPos_countMat <- getOrthologCountMat(barteltMousePCs_zPos, 
                                             allPrimateOrthologs, 
                                             "mouse", 
-                                            normMethod = "shiftedLog")
+                                            normMethod = "shiftedLog", 
+                                            useForL = 6687)
+barteltMousePCs_zPos_countMat %>% colSums() %>% hist(main = "Bartelt Mouse Z+ PCs", xlab = "Read counts per cell")
 mousePCs_zPos_countMat <- getOrthologCountMat(mousePCs_zPos, 
                                               allPrimateOrthologs, 
                                               "mouse", 
-                                              normMethod = "shiftedLog")
+                                              normMethod = "shiftedLog", 
+                                              useForL = 6687)
+mousePCs_zPos_countMat %>% colSums() %>% hist(main = "Pilot Mouse Z+ PCs", xlab = "Read counts per cell")
 zPos_countMat <- mergeCountMats(list(humanPCs_zPos_countMat, 
                                      haoRhesus_zPos_countMat, 
                                      barteltMousePCs_zPos_countMat, 
                                      mousePCs_zPos_countMat))
+zPos_countMat %>% colSums() %>% hist(main = "All Species Merged", xlab = "Read counts per cell", breaks = 100)
 zPos_dnr <- getDNR(zPos_countMat)
 hist(zPos_dnr$dnr)
 
@@ -373,8 +357,8 @@ pseudobulked_zPos_dnr <- getDNR(pseudobulk_zPos)
 hist(pseudobulked_zPos_dnr$dnr)
 
 ## 3.4 DNR Z- ----
-human1PCs_zNeg_countMat <- humanPCs_zNeg@assays$RNA$counts.1 %>% as.matrix() %>% TPMNormalize(humanGeneDF)
-human2PCs_zNeg_countMat <- humanPCs_zNeg@assays$RNA$counts.2 %>% as.matrix() %>% TPMNormalize(humanGeneDF)
+human1PCs_zNeg_countMat <- humanPCs_zNeg@assays$RNA$counts.1 %>% as.matrix() %>% shiftedLogNorm(pseudocount = 1)
+human2PCs_zNeg_countMat <- humanPCs_zNeg@assays$RNA$counts.2 %>% as.matrix() %>% shiftedLogNorm(pseudocount = 1)
 humanPCs_zNeg_countMat <- mergeCountMats(list(human1PCs_zNeg_countMat, human2PCs_zNeg_countMat)) 
 haoRhesus_zNeg_countMat <- getOrthologCountMat(haoRhesus_zNeg, 
                                                allPrimateOrthologs,

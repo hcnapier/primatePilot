@@ -26,5 +26,7 @@ shiftedLogNorm <- function(countMat, pseudocount = 1, useForL = "meanReadDepth")
   }
   s = s/L
   scaledMat = log((countMat/s) + pseudocount)
+  meanRawReadDepth = countMat %>% colSums() %>% mean()
+  print(paste("mean raw read depth = ", meanRawReadDepth))
   return(scaledMat)
 }
