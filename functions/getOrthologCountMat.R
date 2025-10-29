@@ -8,16 +8,21 @@ require(Seurat)
 require(dplyr)
 
 source("~/Work/VertGenLab/Projects/zebrinEvolution/Code/primatePilot/functions/TPMNormalize.R")
+source("~/Work/VertGenLab/Projects/zebrinEvolution/Code/primatePilot/functions/shiftedLogNorm.R")
 
-getOrthologCountMat <- function(obj, orthologDF, species, tpm = FALSE){
+getOrthologCountMat <- function(obj, orthologDF, species, normMethod = c("tpm", "shiftedLog", ""), useForL = "meanReadDepth"){
   countMat <- obj@assays$RNA$counts # Extract raw count matrix
   speciesGeneName <- paste(species, "gene.name", sep = ".")
-  if(tpm){
+  if(normMethod != ""){
     countMat <- countMat %>% as.matrix()
-    speciesColumns <- colnames(orthologDF)[which(str_detect(colnames(orthologDF), species))]
-    geneSizeDF <- orthologDF %>%
-      dplyr::select(all_of(speciesColumns))
-    countMat <- TPMNormalize(countMat, geneSizeDF)
+    if(normMethod == "tpm"){
+      speciesColumns <- colnames(orthologDF)[which(str_detect(colnames(orthologDF), species))]
+      geneSizeDF <- orthologDF %>%
+        dplyr::select(all_of(speciesColumns))
+      countMat <- TPMNormalize(countMat, geneSizeDF)
+    }else if(normMethod == "shiftedLog"){
+      countMat <- shiftedLogNorm(countMat, pseudocount = 1, useForL = useForL)
+    }
   }
   countMat %>% as.data.frame() -> countMat
   cellBxs <- colnames(countMat)
