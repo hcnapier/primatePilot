@@ -350,7 +350,7 @@ barteltMousePCs_zPos_countMat <- getOrthologCountMat(barteltMousePCs_zPos,
 mousePCs_zPos_countMat <- getOrthologCountMat(mousePCs_zPos, 
                                               allPrimateOrthologs, 
                                               "mouse", 
-                                              tmp = T)
+                                              tpm = T)
 zPos_countMat <- mergeCountMats(list(humanPCs_zPos_countMat, 
                                      haoRhesus_zPos_countMat, 
                                      barteltMousePCs_zPos_countMat, 
@@ -483,100 +483,100 @@ ggplot(data = log(avg_normVars), aes(x = AcrossSpecies, y = AcrossSubtypes)) +
 ### Get entrez IDs for all genes ----
 pcEntrez <- bitr(rownames(avg_normVars), fromType = "SYMBOL", toType = "ENTREZID", OrgDb = "org.Hs.eg.db")
 
-### Lowest variance ----
-lowestVar <- avg_normVars %>% 
+### Low cross-species variance & low cross-subtype variance ----
+lowSpec_lowSub <- avg_normVars %>% 
   log() %>%
-  filter(AcrossSubtypes < -1.5) %>%
-  filter(AcrossSpecies < -2.5)
-lowestVarEntrez<- bitr(rownames(lowestVar), fromType = "SYMBOL", toType = "ENTREZID", OrgDb = "org.Hs.eg.db")
+  filter(AcrossSubtypes < -6) %>%
+  filter(AcrossSpecies < -4)
+lowSpec_lowSubEntrez <- bitr(rownames(lowSpec_lowSub), fromType = "SYMBOL", toType = "ENTREZID", OrgDb = "org.Hs.eg.db")
 
-lowestVarGO_bp <- enrichGO(as.character(lowestVarEntrez$ENTREZID), 
+lowSpec_lowSub_bp <- enrichGO(as.character(lowSpec_lowSubEntrez$ENTREZID), 
                       OrgDb = org.Hs.eg.db,
                       ont = 'BP',
                       keyType = "ENTREZID", 
                       universe = as.character(pcEntrez$ENTREZID),
                       qvalueCutoff = 0.5, 
                       pvalueCutoff = 0.5)
-clusterProfiler::dotplot(lowestVarGO_bp)
+clusterProfiler::dotplot(lowSpec_lowSub_bp)
 
-lowestVarGO_mf <- enrichGO(as.character(lowestVarEntrez$ENTREZID), 
+lowSpec_lowSub_mf <- enrichGO(as.character(lowSpec_lowSubEntrez$ENTREZID), 
                            OrgDb = org.Hs.eg.db,
                            ont = 'MF',
                            keyType = "ENTREZID", 
                            universe = as.character(pcEntrez$ENTREZID),
                            qvalueCutoff = 0.5, 
                            pvalueCutoff = 0.5)
-clusterProfiler::dotplot(lowestVarGO_mf)
+clusterProfiler::dotplot(lowSpec_lowSub_mf)
 
-### Low variance ----
-lowVar <- avg_normVars %>% 
+### Low cross-species variance, high cross-subtype variance ----
+lowSpec_hiSub <- avg_normVars %>% 
   log() %>%
-  filter(AcrossSubtypes < 0) %>%
-  filter(AcrossSpecies < 0)
-lowVarEntrez<- bitr(rownames(lowVar), fromType = "SYMBOL", toType = "ENTREZID", OrgDb = "org.Hs.eg.db")
+  filter(AcrossSubtypes > -6) %>%
+  filter(AcrossSpecies < -4)
+lowSpec_hiSubEntrez<- bitr(rownames(lowSpec_hiSub), fromType = "SYMBOL", toType = "ENTREZID", OrgDb = "org.Hs.eg.db")
 
-lowVarGO_bp <- enrichGO(as.character(lowVarEntrez$ENTREZID), 
+lowSpec_hiSub_bp <- enrichGO(as.character(lowSpec_hiSubEntrez$ENTREZID), 
                            OrgDb = org.Hs.eg.db,
                            ont = 'BP',
                            keyType = "ENTREZID", 
                            universe = as.character(pcEntrez$ENTREZID),
                            qvalueCutoff = 0.5, 
                            pvalueCutoff = 0.5)
-clusterProfiler::dotplot(lowVarGO_bp)
+clusterProfiler::dotplot(lowSpec_hiSub_bp)
 
-lowVarGO_mf <- enrichGO(as.character(lowVarEntrez$ENTREZID), 
+lowSpec_hiSub_mf <- enrichGO(as.character(lowSpec_hiSubEntrez$ENTREZID), 
                         OrgDb = org.Hs.eg.db,
                         ont = 'MF',
                         keyType = "ENTREZID", 
                         universe = as.character(pcEntrez$ENTREZID),
                         qvalueCutoff = 0.5, 
                         pvalueCutoff = 0.5)
-clusterProfiler::dotplot(lowVarGO_mf)
+clusterProfiler::dotplot(lowSpec_hiSub_mf)
 
-### High variance ----
-hiVar <- avg_normVars %>% 
+### High cross-species variance, low cross-subtype variance ----
+hiSpec_lowSub <- avg_normVars %>% 
   log() %>%
-  filter(AcrossSubtypes > 0) %>%
-  filter(AcrossSpecies > 0)
-hiVarEntrez<- bitr(rownames(hiVar), fromType = "SYMBOL", toType = "ENTREZID", OrgDb = "org.Hs.eg.db")
-hiVarGO_bp <- enrichGO(as.character(hiVarEntrez$ENTREZID), 
+  filter(AcrossSubtypes < -6) %>%
+  filter(AcrossSpecies > -4)
+hiSpec_lowSubEntrez<- bitr(rownames(hiSpec_lowSub), fromType = "SYMBOL", toType = "ENTREZID", OrgDb = "org.Hs.eg.db")
+hiSpec_lowSub_bp <- enrichGO(as.character(hiSpec_lowSubEntrez$ENTREZID), 
                         OrgDb = org.Hs.eg.db,
                         ont = 'BP',
                         keyType = "ENTREZID", 
                         universe = as.character(pcEntrez$ENTREZID),
                         qvalueCutoff = 0.5, 
                         pvalueCutoff = 0.5)
-clusterProfiler::dotplot(hiVarGO_bp)
+clusterProfiler::dotplot(hiSpec_lowSub_bp)
 
-hiVarGO_mf <- enrichGO(as.character(hiVarEntrez$ENTREZID), 
+hiSpec_lowSub_mf <- enrichGO(as.character(hiSpec_lowSubEntrez$ENTREZID), 
                        OrgDb = org.Hs.eg.db,
                        ont = 'MF',
                        keyType = "ENTREZID", 
                        universe = as.character(pcEntrez$ENTREZID),
                        qvalueCutoff = 0.5, 
                        pvalueCutoff = 0.5)
-clusterProfiler::dotplot(hiVarGO_mf)
+clusterProfiler::dotplot(hiSpec_lowSub_mf)
 
-### Highest variance ----
-highestVar <- avg_normVars %>% 
+### High cross-species variance & high cross-subtype variance ----
+hiSpec_hiSub <- avg_normVars %>% 
   log() %>%
-  filter(AcrossSubtypes > 1.5) %>%
-  filter(AcrossSpecies > 1)
-highestVarEntrez<- bitr(rownames(highestVar), fromType = "SYMBOL", toType = "ENTREZID", OrgDb = "org.Hs.eg.db")
-highestVarGO_bp <- enrichGO(as.character(highestVarEntrez$ENTREZID), 
+  filter(AcrossSubtypes > -6) %>%
+  filter(AcrossSpecies > -4)
+hiSpec_hiSubEntrez<- bitr(rownames(hiSpec_hiSub), fromType = "SYMBOL", toType = "ENTREZID", OrgDb = "org.Hs.eg.db")
+hiSpec_hiSub_bp <- enrichGO(as.character(hiSpec_hiSubEntrez$ENTREZID), 
                        OrgDb = org.Hs.eg.db,
                        ont = 'BP',
                        keyType = "ENTREZID", 
                        universe = as.character(pcEntrez$ENTREZID),
                        qvalueCutoff = 0.5, 
                        pvalueCutoff = 0.5)
-clusterProfiler::dotplot(highestVarGO_bp)
+clusterProfiler::dotplot(hiSpec_hiSub_bp)
 
-highestVarGO_mf <- enrichGO(as.character(highestVarEntrez$ENTREZID), 
+hiSpec_hiSub_mf <- enrichGO(as.character(hiSpec_hiSubEntrez$ENTREZID), 
                             OrgDb = org.Hs.eg.db,
                             ont = 'MF',
                             keyType = "ENTREZID", 
                             universe = as.character(pcEntrez$ENTREZID),
                             qvalueCutoff = 0.5, 
                             pvalueCutoff = 0.5)
-clusterProfiler::dotplot(highestVarGO_mf)
+clusterProfiler::dotplot(hiSpec_hiSub_mf)

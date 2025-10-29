@@ -5,6 +5,8 @@
 require(tibble)
 require(dplyr)
 
+source("~/Work/VertGenLab/Projects/zebrinEvolution/Code/primatePilot/functions/removeZeroRowsCols.R")
+
 TPMNormalize <- function(countMat, geneSizes){
   if(!is.matrix(countMat)){
     stop("countMat must by of type matrix")
@@ -15,9 +17,12 @@ TPMNormalize <- function(countMat, geneSizes){
   names(genes) <- geneNameCol
   genes <- inner_join(genes, geneSizes)
   geneSizeMat <- countMat
+  geneSizeMat[] <- 0
   for(currGene in genes[geneNameCol]){
     geneSizeMat[currGene,] <- genes[geneSizeCol][which(genes[geneNameCol] == currGene),]
   }
+  geneSizeMat <- removeZeroRowsCols(geneSizeMat)
+  countMat <- countMat[rownames(geneSizeMat),]
   rpkMat <- countMat/geneSizeMat
   scaleFactor <- sum(rpkMat, na.rm = T)/1000
   tpmMat <- rpkMat/scaleFactor
