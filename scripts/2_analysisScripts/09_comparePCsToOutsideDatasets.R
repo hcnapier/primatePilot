@@ -451,7 +451,7 @@ mouseVar_log <- log(mouseVar)
 hist(mouseVar_log)
 
 ## 6.4 Mean mean normalized variance across subtypes ----
-mergedVar_acrSubtypes <- mergeVectors(list(mouseVar, rhesusVar), list("mouse", "rhesus")) %>%
+mergedVar_acrSubtypes <- mergeVectors(list(mouseVar, rhesusVar, humanVar), list("mouse", "rhesus", "human")) %>%
   na.omit()
 meanNormVar_acrSubtypes <- apply(mergedVar_acrSubtypes, MARGIN = 1, mean)
 
@@ -460,7 +460,7 @@ meanNormVar_acrSubtypes <- apply(mergedVar_acrSubtypes, MARGIN = 1, mean)
 ## 7.1 Plot ----
 avg_normVars <- mergeVectors(list(meanNormVar_acrSpecies, meanNormVar_acrSubtypes), list("AcrossSpecies", "AcrossSubtypes")) %>%
   filter(AcrossSpecies > 0) %>%
-  filter(AcrossSubtypes > 00)
+  filter(AcrossSubtypes > 0)
 ggplot(data = avg_normVars, aes(x = AcrossSpecies, y = AcrossSubtypes)) + 
   geom_point() + 
   theme_minimal() +
@@ -481,8 +481,8 @@ pcEntrez <- bitr(rownames(avg_normVars), fromType = "SYMBOL", toType = "ENTREZID
 ### Low cross-species variance & low cross-subtype variance ----
 lowSpec_lowSub <- avg_normVars %>% 
   log() %>%
-  filter(AcrossSubtypes < -6) %>%
-  filter(AcrossSpecies < -4)
+  filter(AcrossSubtypes < -1.75) %>%
+  filter(AcrossSpecies < -1.75)
 lowSpec_lowSubEntrez <- bitr(rownames(lowSpec_lowSub), fromType = "SYMBOL", toType = "ENTREZID", OrgDb = "org.Hs.eg.db")
 
 lowSpec_lowSub_bp <- enrichGO(as.character(lowSpec_lowSubEntrez$ENTREZID), 
@@ -506,8 +506,8 @@ clusterProfiler::dotplot(lowSpec_lowSub_mf)
 ### Low cross-species variance, high cross-subtype variance ----
 lowSpec_hiSub <- avg_normVars %>% 
   log() %>%
-  filter(AcrossSubtypes > -6) %>%
-  filter(AcrossSpecies < -4)
+  filter(AcrossSubtypes > -1.75) %>%
+  filter(AcrossSpecies < -1.75)
 lowSpec_hiSubEntrez<- bitr(rownames(lowSpec_hiSub), fromType = "SYMBOL", toType = "ENTREZID", OrgDb = "org.Hs.eg.db")
 
 lowSpec_hiSub_bp <- enrichGO(as.character(lowSpec_hiSubEntrez$ENTREZID), 
@@ -531,8 +531,8 @@ clusterProfiler::dotplot(lowSpec_hiSub_mf)
 ### High cross-species variance, low cross-subtype variance ----
 hiSpec_lowSub <- avg_normVars %>% 
   log() %>%
-  filter(AcrossSubtypes < -6) %>%
-  filter(AcrossSpecies > -4)
+  filter(AcrossSubtypes < -1.75) %>%
+  filter(AcrossSpecies > -1.75)
 hiSpec_lowSubEntrez<- bitr(rownames(hiSpec_lowSub), fromType = "SYMBOL", toType = "ENTREZID", OrgDb = "org.Hs.eg.db")
 hiSpec_lowSub_bp <- enrichGO(as.character(hiSpec_lowSubEntrez$ENTREZID), 
                         OrgDb = org.Hs.eg.db,
@@ -555,8 +555,8 @@ clusterProfiler::dotplot(hiSpec_lowSub_mf)
 ### High cross-species variance & high cross-subtype variance ----
 hiSpec_hiSub <- avg_normVars %>% 
   log() %>%
-  filter(AcrossSubtypes > -6) %>%
-  filter(AcrossSpecies > -4)
+  filter(AcrossSubtypes > -1.75) %>%
+  filter(AcrossSpecies > -1.75)
 hiSpec_hiSubEntrez<- bitr(rownames(hiSpec_hiSub), fromType = "SYMBOL", toType = "ENTREZID", OrgDb = "org.Hs.eg.db")
 hiSpec_hiSub_bp <- enrichGO(as.character(hiSpec_hiSubEntrez$ENTREZID), 
                        OrgDb = org.Hs.eg.db,
