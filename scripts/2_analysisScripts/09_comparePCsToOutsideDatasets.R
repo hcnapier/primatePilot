@@ -19,6 +19,7 @@ source("mergeCountMats.R")
 source("getDNR.R")
 source("meanNormVar.R")
 source("getNonZeroSD.R")
+source("getNonZeroVar.R")
 
 ## 0.2 Setup one to one orthologs ----
 setwd("/Users/haileynapier/Work/VertGenLab/Projects/zebrinEvolution/Data/geneLists/orthologs")
@@ -357,25 +358,38 @@ pseudobulked_zPos_dnr <- getDNR(pseudobulk_zPos)
 hist(pseudobulked_zPos_dnr$dnr)
 
 ## 3.4 DNR Z- ----
-human1PCs_zNeg_countMat <- humanPCs_zNeg@assays$RNA$counts.1 %>% as.matrix() %>% shiftedLogNorm(pseudocount = 1)
-human2PCs_zNeg_countMat <- humanPCs_zNeg@assays$RNA$counts.2 %>% as.matrix() %>% shiftedLogNorm(pseudocount = 1)
+human1PCs_zNeg_countMat <- humanPCs_zNeg@assays$RNA$counts.1 %>% as.matrix() %>% shiftedLogNorm(pseudocount = 1, useForL = 7861)
+human2PCs_zNeg_countMat <- humanPCs_zNeg@assays$RNA$counts.2 %>% as.matrix() %>% shiftedLogNorm(pseudocount = 1, useForL = 7861)
 humanPCs_zNeg_countMat <- mergeCountMats(list(human1PCs_zNeg_countMat, human2PCs_zNeg_countMat)) 
+humanPCs_zNeg_countMat %>% colSums() %>% hist(main = "Human Z- PCs", xlab = "Read counts per cell")
+
 haoRhesus_zNeg_countMat <- getOrthologCountMat(haoRhesus_zNeg, 
                                                allPrimateOrthologs,
                                                "macaque", 
-                                               normMethod = "shiftedLog")
+                                               normMethod = "shiftedLog", 
+                                               useForL = 10127)
+haoRhesus_zNeg_countMat %>% colSums() %>% hist(main = "Hao Rhesus Z- PCs", xlab = "Read counts per cell")
+
 barteltMousePCs_zNeg_countMat <- getOrthologCountMat(barteltMousePCs_zNeg, 
                                                      allPrimateOrthologs, 
                                                      "mouse", 
-                                                     normMethod = "shiftedLog")
+                                                     normMethod = "shiftedLog", 
+                                                     useForL = 10127)
+barteltMousePCs_zNeg_countMat %>% colSums() %>% hist(main = "Bartelt Mouse Z- PCs", xlab = "Read counts per cell")
+
 mousePCs_zNeg_countMat <- getOrthologCountMat(mousePCs_zNeg, 
                                               allPrimateOrthologs, 
                                               "mouse", 
-                                              normMethod = "shiftedLog")
+                                              normMethod = "shiftedLog", 
+                                              useForL = 10127)
+mousePCs_zNeg_countMat %>% colSums() %>% hist(main = "Pilot Mouse Z- PCs", xlab = "Read counts per cell")
+
 zNeg_countMat <- mergeCountMats(list(humanPCs_zNeg_countMat, 
                                      haoRhesus_zNeg_countMat, 
                                      barteltMousePCs_zNeg_countMat, 
                                      mousePCs_zNeg_countMat))
+zNeg_countMat %>% colSums() %>% hist(main = "All Species Merged", xlab = "Read counts per cell", breaks = 100)
+
 zNeg_dnr <- getDNR(zNeg_countMat)
 hist(zNeg_dnr$dnr)
 
@@ -386,103 +400,106 @@ hist(pseudobulked_zNeg_dnr$dnr)
 # 4.0 Standard deviation by subtype across species ----
 ## 4.1 Z- ----
 zNegSD <- getNonZeroSD(zNeg_countMat)
-zNegSD[zNegSD != 0] %>% hist(breaks = 700, main = "Z- PC SD Across Species", xlab = "SD of gene expression in Z- PCs across species")
-zNegSD[zNegSD != 0] %>% log() %>% hist(main = "Z- PC SD Across Species, log transformed",  xlab = "log(SD) of gene expression in Z- PCs across species")
+zNegSD[zNegSD != 0] %>% hist(breaks = 200, main = "Z- PC SD Across Species", xlab = "SD of gene expression in Z- PCs across species")
+zNegSD[zNegSD != 0] %>% log() %>% hist(breaks = 200, main = "Z- PC SD Across Species, log transformed",  xlab = "log(SD) of gene expression in Z- PCs across species")
 range(zNegSD, na.rm=T)
 sort(zNegSD, decreasing = T) %>% head(n = 10)
 
 ## 4.2 Z+ ----
 zPosSD <- getNonZeroSD(zPos_countMat)
-zPosSD[zPosSD != 0] %>% hist(breaks = 700, main = "Z+ PC SD Across Species", xlab = "SD of gene expression in Z+ PCs across species")
-zPosSD[zNegSD != 0] %>% log() %>% hist(main = "Z+ PC SD Across Species, log transformed",  xlab = "log(SD) of gene expression in Z+ PCs across species")
+zPosSD[zPosSD != 0] %>% hist(breaks = 200, main = "Z+ PC SD Across Species", xlab = "SD of gene expression in Z+ PCs across species")
+zPosSD[zNegSD != 0] %>% log() %>% hist(breaks = 200, main = "Z+ PC SD Across Species, log transformed",  xlab = "log(SD) of gene expression in Z+ PCs across species")
 range(zPosSD, na.rm=T)
 sort(zPosSD, decreasing = T) %>% head(n = 10)
 
 
 # 5.0 Mean normalized variance by subtype across species ----
 ## 5.1 Z- ----
-zNegVar <- meanNormVar(zNeg_countMat)
+zNegVar <- getNonZeroVar(zNeg_countMat)
 zNegVar[zNegVar != 0] %>% 
-  hist(breaks = 700, main = "Normalized Variance in Z- PCs Across Species", xlab = "variance/mean gene expression in Z- PCs across species")
+  hist(breaks = 200, main = "Variance in Z- PCs Across Species", xlab = "variance/mean gene expression in Z- PCs across species")
 range(zNegVar, na.rm = T)
 sort(zNegVar, decreasing = T) %>% head(n = 10)
 zNegVar_log <- zNegVar[zNegVar != 0] %>% log()
-hist(zNegVar_log, main = "Normalized Variance in Z- PCs Across Species", xlab = "Variance/Mean gene expression in Z- PCs across species")
+hist(zNegVar_log, breaks = 200, main = "Variance in Z- PCs Across Species", xlab = "Variance/Mean gene expression in Z- PCs across species")
 sort(zNegVar_log, decreasing = T) %>% head(n = 10)
 
 ## 5.2 Z+ ----
-zPosVar <- meanNormVar(zPos_countMat)
-zPosVar[zPosVar != 0] %>% hist(breaks = 700, main = "Normalized Variance in Z+ PCs Across Species", xlab = "variance/mean gene expression in Z+ PCs across species")
+zPosVar <- getNonZeroVar(zPos_countMat)
+zPosVar[zPosVar != 0] %>% hist(breaks = 200, main = "Variance in Z+ PCs Across Species", xlab = "variance/mean gene expression in Z+ PCs across species")
 range(zPosVar, na.rm = T)
 sort(zPosVar, decreasing = T) %>% head(n = 10)
 zPosVar_log <- zPosVar[zPosVar != 0] %>% log()
-hist(zPosVar_log, main = "Normalized Variance in Z- PCs Across Species", xlab = "Variance/Mean gene expression in Z- PCs across species")
-sort(zPosVar_log, decreasing = T) %>% head()
+hist(zPosVar_log, breaks = 200, main = "Normalized Variance in Z+ PCs Across Species", xlab = "Variance/Mean gene expression in Z- PCs across species")
+sort(zPosVar_log, decreasing = T) %>% head(n = 10)
 
 # Mean mean normalized variance across species ----
 mergedVar_acrSpecies <- mergeVectors(list(zPosVar, zNegVar), list("zPos", "zNeg")) %>%
   na.omit()
-meanNormVar_acrSpecies <- apply(mergedVar_acrSpecies, MARGIN = 1, mean)
-hist(log(meanNormVar_acrSpecies))
+meanVar_acrSpecies <- apply(mergedVar_acrSpecies, MARGIN = 1, mean)
+hist(log(meanVar_acrSpecies))
 
 # 6.0 Mean normalized variance by species across subtypes ----
 ## 6.1 Human ----
 humanPCs_countMat <- mergeCountMats(list(humanPCs_zNeg_countMat, humanPCs_zPos_countMat))
-humanVar <- meanNormVar(humanPCs_countMat)
+humanVar <- getNonZeroVar(humanPCs_countMat)
 range(humanVar, na.rm = T)
 sort(humanVar, decreasing = T) %>% head(n = 10)
 humanVar_log <- log(humanVar)
-hist(humanVar_log)
+hist(humanVar_log, breaks = 100)
+hist(humanVar, breaks = 100)
 
 ## 6.2 Rhesus ----
 rhesusPCs_countMat <- mergeCountMats(list(haoRhesus_zNeg_countMat,haoRhesus_zPos_countMat))
-rhesusVar <- meanNormVar(rhesusPCs_countMat)
+rhesusVar <- getNonZeroVar(rhesusPCs_countMat)
 range(rhesusVar, na.rm = T)
 sort(rhesusVar, decreasing = T) %>% head(n = 10)
 rhesusVar_log <- log(rhesusVar)
-hist(rhesusVar_log)
+hist(rhesusVar_log, breaks = 100)
+hist(rhesusVar, breaks = 100)
 
 ## 6.3 Mouse ----
 mousePCs_countMat <- mergeCountMats(list(barteltMousePCs_zNeg_countMat, barteltMousePCs_zPos_countMat, mousePCs_zNeg_countMat, mousePCs_zPos_countMat))
-mouseVar <- meanNormVar(mousePCs_countMat)
+mouseVar <- getNonZeroVar(mousePCs_countMat)
 range(mouseVar, na.rm = T)
 sort(mouseVar, decreasing = T) %>% head(n = 10)
 mouseVar_log <- log(mouseVar)
-hist(mouseVar_log)
+hist(mouseVar_log, breaks = 100)
+hist(mouseVar, breaks = 100)
 
 ## 6.4 Mean mean normalized variance across subtypes ----
-mergedVar_acrSubtypes <- mergeVectors(list(mouseVar, rhesusVar), list("mouse", "rhesus")) %>%
+mergedVar_acrSubtypes <- mergeVectors(list(mouseVar, humanVar, rhesusVar), list("mouse", "rhesus", "human")) %>%
   na.omit()
-meanNormVar_acrSubtypes <- apply(mergedVar_acrSubtypes, MARGIN = 1, mean)
+meanVar_acrSubtypes <- apply(mergedVar_acrSubtypes, MARGIN = 1, mean)
 
 
 # 7.0 Explore average normalized variances across species and subtypes ----
 ## 7.1 Plot ----
-avg_normVars <- mergeVectors(list(meanNormVar_acrSpecies, meanNormVar_acrSubtypes), list("AcrossSpecies", "AcrossSubtypes")) %>%
+avgVar <- mergeVectors(list(meanVar_acrSpecies, meanVar_acrSubtypes), list("AcrossSpecies", "AcrossSubtypes")) %>%
   filter(AcrossSpecies > 0) %>%
   filter(AcrossSubtypes > 00)
-ggplot(data = avg_normVars, aes(x = AcrossSpecies, y = AcrossSubtypes)) + 
+ggplot(data = avgVar, aes(x = AcrossSpecies, y = AcrossSubtypes)) + 
   geom_point() + 
   theme_minimal() +
-  ggtitle("Average Normalized Variance in Gene Expression")
+  ggtitle("Average Variance in Gene Expression")
   
 # Log transformed 
-avg_normVars %>% log() %>% arrange(desc(AcrossSpecies)) %>% head(n = 20)
-avg_normVars %>% log() %>% arrange(desc(AcrossSpecies)) %>% tail(n = 20)
-ggplot(data = log(avg_normVars), aes(x = AcrossSpecies, y = AcrossSubtypes)) + 
+avgVar %>% log() %>% arrange(desc(AcrossSpecies)) %>% head(n = 20)
+avgVar %>% log() %>% arrange(desc(AcrossSpecies)) %>% tail(n = 20)
+ggplot(data = log(avgVar), aes(x = AcrossSpecies, y = AcrossSubtypes)) + 
   geom_point() + 
   theme_minimal() +
-  ggtitle("Log Transformed Average Normalized Variance in Gene Expression")
+  ggtitle("Log Transformed Average Variance in Gene Expression")
 
 ## 7.2 GO terms -----
 ### Get entrez IDs for all genes ----
-pcEntrez <- bitr(rownames(avg_normVars), fromType = "SYMBOL", toType = "ENTREZID", OrgDb = "org.Hs.eg.db")
+pcEntrez <- bitr(rownames(avgVar), fromType = "SYMBOL", toType = "ENTREZID", OrgDb = "org.Hs.eg.db")
 
 ### Low cross-species variance & low cross-subtype variance ----
-lowSpec_lowSub <- avg_normVars %>% 
+lowSpec_lowSub <- avgVar %>% 
   log() %>%
-  filter(AcrossSubtypes < -6) %>%
-  filter(AcrossSpecies < -4)
+  filter(AcrossSubtypes < -2.25) %>%
+  filter(AcrossSpecies < -2)
 lowSpec_lowSubEntrez <- bitr(rownames(lowSpec_lowSub), fromType = "SYMBOL", toType = "ENTREZID", OrgDb = "org.Hs.eg.db")
 
 lowSpec_lowSub_bp <- enrichGO(as.character(lowSpec_lowSubEntrez$ENTREZID), 
@@ -504,10 +521,10 @@ lowSpec_lowSub_mf <- enrichGO(as.character(lowSpec_lowSubEntrez$ENTREZID),
 clusterProfiler::dotplot(lowSpec_lowSub_mf)
 
 ### Low cross-species variance, high cross-subtype variance ----
-lowSpec_hiSub <- avg_normVars %>% 
+lowSpec_hiSub <- avgVar %>% 
   log() %>%
-  filter(AcrossSubtypes > -6) %>%
-  filter(AcrossSpecies < -4)
+  filter(AcrossSubtypes > -2.25) %>%
+  filter(AcrossSpecies < -2)
 lowSpec_hiSubEntrez<- bitr(rownames(lowSpec_hiSub), fromType = "SYMBOL", toType = "ENTREZID", OrgDb = "org.Hs.eg.db")
 
 lowSpec_hiSub_bp <- enrichGO(as.character(lowSpec_hiSubEntrez$ENTREZID), 
@@ -529,10 +546,10 @@ lowSpec_hiSub_mf <- enrichGO(as.character(lowSpec_hiSubEntrez$ENTREZID),
 clusterProfiler::dotplot(lowSpec_hiSub_mf)
 
 ### High cross-species variance, low cross-subtype variance ----
-hiSpec_lowSub <- avg_normVars %>% 
+hiSpec_lowSub <- avgVar %>% 
   log() %>%
-  filter(AcrossSubtypes < -6) %>%
-  filter(AcrossSpecies > -4)
+  filter(AcrossSubtypes < -2.25) %>%
+  filter(AcrossSpecies > -2)
 hiSpec_lowSubEntrez<- bitr(rownames(hiSpec_lowSub), fromType = "SYMBOL", toType = "ENTREZID", OrgDb = "org.Hs.eg.db")
 hiSpec_lowSub_bp <- enrichGO(as.character(hiSpec_lowSubEntrez$ENTREZID), 
                         OrgDb = org.Hs.eg.db,
@@ -555,8 +572,8 @@ clusterProfiler::dotplot(hiSpec_lowSub_mf)
 ### High cross-species variance & high cross-subtype variance ----
 hiSpec_hiSub <- avg_normVars %>% 
   log() %>%
-  filter(AcrossSubtypes > -6) %>%
-  filter(AcrossSpecies > -4)
+  filter(AcrossSubtypes > -2) %>%
+  filter(AcrossSpecies > -5)
 hiSpec_hiSubEntrez<- bitr(rownames(hiSpec_hiSub), fromType = "SYMBOL", toType = "ENTREZID", OrgDb = "org.Hs.eg.db")
 hiSpec_hiSub_bp <- enrichGO(as.character(hiSpec_hiSubEntrez$ENTREZID), 
                        OrgDb = org.Hs.eg.db,
