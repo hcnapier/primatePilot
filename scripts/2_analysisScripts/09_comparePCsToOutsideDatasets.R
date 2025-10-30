@@ -417,20 +417,20 @@ sort(zPosSD, decreasing = T) %>% head(n = 10)
 ## 5.1 Z- ----
 zNegVar <- getNonZeroVar(zNeg_countMat)
 zNegVar[zNegVar != 0] %>% 
-  hist(breaks = 200, main = "Variance in Z- PCs Across Species", xlab = "variance/mean gene expression in Z- PCs across species")
+  hist(breaks = 200, main = "Variance in Z- PCs Across Species", xlab = "variance in gene expression in Z- PCs across species")
 range(zNegVar, na.rm = T)
 sort(zNegVar, decreasing = T) %>% head(n = 10)
 zNegVar_log <- zNegVar[zNegVar != 0] %>% log()
-hist(zNegVar_log, breaks = 200, main = "Variance in Z- PCs Across Species", xlab = "Variance/Mean gene expression in Z- PCs across species")
+hist(zNegVar_log, breaks = 200, main = "Variance in Z- PCs Across Species", xlab = "log(variance) in gene expression in Z- PCs across species")
 sort(zNegVar_log, decreasing = T) %>% head(n = 10)
 
 ## 5.2 Z+ ----
 zPosVar <- getNonZeroVar(zPos_countMat)
-zPosVar[zPosVar != 0] %>% hist(breaks = 200, main = "Variance in Z+ PCs Across Species", xlab = "variance/mean gene expression in Z+ PCs across species")
+zPosVar[zPosVar != 0] %>% hist(breaks = 200, main = "Variance in Z+ PCs Across Species", xlab = "variance in gene expression in Z+ PCs across species")
 range(zPosVar, na.rm = T)
 sort(zPosVar, decreasing = T) %>% head(n = 10)
 zPosVar_log <- zPosVar[zPosVar != 0] %>% log()
-hist(zPosVar_log, breaks = 200, main = "Normalized Variance in Z+ PCs Across Species", xlab = "Variance/Mean gene expression in Z- PCs across species")
+hist(zPosVar_log, breaks = 200, main = "Variance in Z+ PCs Across Species", xlab = "log(variance) gene expression in Z- PCs across species")
 sort(zPosVar_log, decreasing = T) %>% head(n = 10)
 
 # Mean mean normalized variance across species ----
