@@ -324,77 +324,73 @@ pcSubtype_corPlot
 
 ## 3.3 DNR Z+ ----
 ### 3.3.1 Get single cell count matrices
-human1PCs_zPos_countMat <- humanPCs_zPos@assays$RNA$counts.1 %>% as.matrix() %>% shiftedLogNorm(pseudocount = 1, useForL = 6687)
-human2PCs_zPos_countMat <- humanPCs_zPos@assays$RNA$counts.2 %>% as.matrix() %>% shiftedLogNorm(pseudocount = 1, useForL = 6687)
+human1PCs_zPos_countMat <- humanPCs_zPos@assays$RNA$counts.1 %>% as.matrix() 
+human2PCs_zPos_countMat <- humanPCs_zPos@assays$RNA$counts.2 %>% as.matrix()
 humanPCs_zPos_countMat <- mergeCountMats(list(human1PCs_zPos_countMat, human2PCs_zPos_countMat)) 
 humanPCs_zPos_countMat %>% colSums() %>% hist(main = "Human Z+ PCs", xlab = "Read counts per cell")
 haoRhesus_zPos_countMat <- getOrthologCountMat(haoRhesus_zPos, 
                                                allPrimateOrthologs,
                                                "macaque", 
-                                               normMethod = "shiftedLog",
-                                               useForL = 6687)
+                                               normMethod = "")
 haoRhesus_zPos_countMat %>% colSums() %>% hist(main = "Hao Rhesus Z+ PCs", xlab = "Read counts per cell")
 barteltMousePCs_zPos_countMat <- getOrthologCountMat(barteltMousePCs_zPos, 
                                             allPrimateOrthologs, 
                                             "mouse", 
-                                            normMethod = "shiftedLog", 
-                                            useForL = 6687)
+                                            normMethod = "")
 barteltMousePCs_zPos_countMat %>% colSums() %>% hist(main = "Bartelt Mouse Z+ PCs", xlab = "Read counts per cell")
 mousePCs_zPos_countMat <- getOrthologCountMat(mousePCs_zPos, 
                                               allPrimateOrthologs, 
                                               "mouse", 
-                                              normMethod = "shiftedLog", 
-                                              useForL = 6687)
+                                              normMethod = "")
 mousePCs_zPos_countMat %>% colSums() %>% hist(main = "Pilot Mouse Z+ PCs", xlab = "Read counts per cell")
 zPos_countMat <- mergeCountMats(list(humanPCs_zPos_countMat, 
                                      haoRhesus_zPos_countMat, 
                                      barteltMousePCs_zPos_countMat, 
-                                     mousePCs_zPos_countMat))
-zPos_countMat %>% colSums() %>% hist(main = "All Species Merged", xlab = "Read counts per cell", breaks = 100)
+                                     mousePCs_zPos_countMat)) %>%
+  shiftedLogNorm()
+zPos_countMat %>% colSums() %>% hist(main = "Z+ All Species Merged", xlab = "Read counts per cell", breaks = 100)
 zPos_dnr <- getDNR(zPos_countMat)
 hist(zPos_dnr$dnr)
 
-pseudobulked_zPos_dnr <- getDNR(pseudobulk_zPos)
-hist(pseudobulked_zPos_dnr$dnr)
+#pseudobulked_zPos_dnr <- getDNR(pseudobulk_zPos)
+#hist(pseudobulked_zPos_dnr$dnr)
 
 ## 3.4 DNR Z- ----
-human1PCs_zNeg_countMat <- humanPCs_zNeg@assays$RNA$counts.1 %>% as.matrix() %>% shiftedLogNorm(pseudocount = 1, useForL = 7861)
-human2PCs_zNeg_countMat <- humanPCs_zNeg@assays$RNA$counts.2 %>% as.matrix() %>% shiftedLogNorm(pseudocount = 1, useForL = 7861)
+human1PCs_zNeg_countMat <- humanPCs_zNeg@assays$RNA$counts.1 %>% as.matrix() 
+human2PCs_zNeg_countMat <- humanPCs_zNeg@assays$RNA$counts.2 %>% as.matrix() 
 humanPCs_zNeg_countMat <- mergeCountMats(list(human1PCs_zNeg_countMat, human2PCs_zNeg_countMat)) 
 humanPCs_zNeg_countMat %>% colSums() %>% hist(main = "Human Z- PCs", xlab = "Read counts per cell")
 
 haoRhesus_zNeg_countMat <- getOrthologCountMat(haoRhesus_zNeg, 
                                                allPrimateOrthologs,
                                                "macaque", 
-                                               normMethod = "shiftedLog", 
-                                               useForL = 10127)
+                                               normMethod = "")
 haoRhesus_zNeg_countMat %>% colSums() %>% hist(main = "Hao Rhesus Z- PCs", xlab = "Read counts per cell")
 
 barteltMousePCs_zNeg_countMat <- getOrthologCountMat(barteltMousePCs_zNeg, 
                                                      allPrimateOrthologs, 
                                                      "mouse", 
-                                                     normMethod = "shiftedLog", 
-                                                     useForL = 10127)
+                                                     normMethod = "")
 barteltMousePCs_zNeg_countMat %>% colSums() %>% hist(main = "Bartelt Mouse Z- PCs", xlab = "Read counts per cell")
 
 mousePCs_zNeg_countMat <- getOrthologCountMat(mousePCs_zNeg, 
                                               allPrimateOrthologs, 
                                               "mouse", 
-                                              normMethod = "shiftedLog", 
-                                              useForL = 10127)
+                                              normMethod = "")
 mousePCs_zNeg_countMat %>% colSums() %>% hist(main = "Pilot Mouse Z- PCs", xlab = "Read counts per cell")
 
 zNeg_countMat <- mergeCountMats(list(humanPCs_zNeg_countMat, 
                                      haoRhesus_zNeg_countMat, 
                                      barteltMousePCs_zNeg_countMat, 
-                                     mousePCs_zNeg_countMat))
-zNeg_countMat %>% colSums() %>% hist(main = "All Species Merged", xlab = "Read counts per cell", breaks = 100)
+                                     mousePCs_zNeg_countMat)) %>%
+  shiftedLogNorm()
+zNeg_countMat %>% colSums() %>% hist(main = "Z- All Species Merged", xlab = "Read counts per cell", breaks = 100)
 
 zNeg_dnr <- getDNR(zNeg_countMat)
 hist(zNeg_dnr$dnr)
 
-pseudobulked_zNeg_dnr <- getDNR(pseudobulk_zNeg)
-hist(pseudobulked_zNeg_dnr$dnr)
+#pseudobulked_zNeg_dnr <- getDNR(pseudobulk_zNeg)
+#hist(pseudobulked_zNeg_dnr$dnr)
 
 
 # 4.0 Standard deviation by subtype across species ----
@@ -441,7 +437,7 @@ hist(log(meanVar_acrSpecies))
 
 # 6.0 Mean normalized variance by species across subtypes ----
 ## 6.1 Human ----
-humanPCs_countMat <- mergeCountMats(list(humanPCs_zNeg_countMat, humanPCs_zPos_countMat))
+humanPCs_countMat <- mergeCountMats(list(humanPCs_zNeg_countMat, humanPCs_zPos_countMat)) %>% shiftedLogNorm()
 humanVar <- getNonZeroVar(humanPCs_countMat)
 range(humanVar, na.rm = T)
 sort(humanVar, decreasing = T) %>% head(n = 10)
@@ -450,7 +446,7 @@ hist(humanVar_log, breaks = 100)
 hist(humanVar, breaks = 100)
 
 ## 6.2 Rhesus ----
-rhesusPCs_countMat <- mergeCountMats(list(haoRhesus_zNeg_countMat,haoRhesus_zPos_countMat))
+rhesusPCs_countMat <- mergeCountMats(list(haoRhesus_zNeg_countMat,haoRhesus_zPos_countMat)) %>% shiftedLogNorm()
 rhesusVar <- getNonZeroVar(rhesusPCs_countMat)
 range(rhesusVar, na.rm = T)
 sort(rhesusVar, decreasing = T) %>% head(n = 10)
@@ -459,7 +455,7 @@ hist(rhesusVar_log, breaks = 100)
 hist(rhesusVar, breaks = 100)
 
 ## 6.3 Mouse ----
-mousePCs_countMat <- mergeCountMats(list(barteltMousePCs_zNeg_countMat, barteltMousePCs_zPos_countMat, mousePCs_zNeg_countMat, mousePCs_zPos_countMat))
+mousePCs_countMat <- mergeCountMats(list(barteltMousePCs_zNeg_countMat, barteltMousePCs_zPos_countMat, mousePCs_zNeg_countMat, mousePCs_zPos_countMat)) %>% shiftedLogNorm()
 mouseVar <- getNonZeroVar(mousePCs_countMat)
 range(mouseVar, na.rm = T)
 sort(mouseVar, decreasing = T) %>% head(n = 10)
@@ -498,8 +494,8 @@ pcEntrez <- bitr(rownames(avgVar), fromType = "SYMBOL", toType = "ENTREZID", Org
 ### Low cross-species variance & low cross-subtype variance ----
 lowSpec_lowSub <- avgVar %>% 
   log() %>%
-  filter(AcrossSubtypes < -2.25) %>%
-  filter(AcrossSpecies < -2)
+  filter(AcrossSubtypes < -1.75) %>%
+  filter(AcrossSpecies < -1.75)
 lowSpec_lowSubEntrez <- bitr(rownames(lowSpec_lowSub), fromType = "SYMBOL", toType = "ENTREZID", OrgDb = "org.Hs.eg.db")
 
 lowSpec_lowSub_bp <- enrichGO(as.character(lowSpec_lowSubEntrez$ENTREZID), 
@@ -523,8 +519,8 @@ clusterProfiler::dotplot(lowSpec_lowSub_mf)
 ### Low cross-species variance, high cross-subtype variance ----
 lowSpec_hiSub <- avgVar %>% 
   log() %>%
-  filter(AcrossSubtypes > -2.25) %>%
-  filter(AcrossSpecies < -2)
+  filter(AcrossSubtypes > -1.75) %>%
+  filter(AcrossSpecies < -1.75)
 lowSpec_hiSubEntrez<- bitr(rownames(lowSpec_hiSub), fromType = "SYMBOL", toType = "ENTREZID", OrgDb = "org.Hs.eg.db")
 
 lowSpec_hiSub_bp <- enrichGO(as.character(lowSpec_hiSubEntrez$ENTREZID), 
@@ -548,8 +544,8 @@ clusterProfiler::dotplot(lowSpec_hiSub_mf)
 ### High cross-species variance, low cross-subtype variance ----
 hiSpec_lowSub <- avgVar %>% 
   log() %>%
-  filter(AcrossSubtypes < -2.25) %>%
-  filter(AcrossSpecies > -2)
+  filter(AcrossSubtypes < -1.75) %>%
+  filter(AcrossSpecies > -1.75)
 hiSpec_lowSubEntrez<- bitr(rownames(hiSpec_lowSub), fromType = "SYMBOL", toType = "ENTREZID", OrgDb = "org.Hs.eg.db")
 hiSpec_lowSub_bp <- enrichGO(as.character(hiSpec_lowSubEntrez$ENTREZID), 
                         OrgDb = org.Hs.eg.db,
@@ -572,8 +568,8 @@ clusterProfiler::dotplot(hiSpec_lowSub_mf)
 ### High cross-species variance & high cross-subtype variance ----
 hiSpec_hiSub <- avg_normVars %>% 
   log() %>%
-  filter(AcrossSubtypes > -2) %>%
-  filter(AcrossSpecies > -5)
+  filter(AcrossSubtypes > -1.75) %>%
+  filter(AcrossSpecies > -1.75)
 hiSpec_hiSubEntrez<- bitr(rownames(hiSpec_hiSub), fromType = "SYMBOL", toType = "ENTREZID", OrgDb = "org.Hs.eg.db")
 hiSpec_hiSub_bp <- enrichGO(as.character(hiSpec_hiSubEntrez$ENTREZID), 
                        OrgDb = org.Hs.eg.db,
