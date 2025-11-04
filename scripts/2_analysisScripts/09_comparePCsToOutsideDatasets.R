@@ -696,18 +696,14 @@ sigma(varBySub_lm)/mean(indvVarDF$variance)
 ## 9.4 Linear model for every gene individually ----
 lmList <- list()
 for(currGene in unique(indvVarDF$gene)){
-  print(currGene)
-  tmpDF <- indvVarDF %>%
+  currGeneDF <- indvVarDF %>%
     filter(gene == currGene)
-  if(nrow(tmpDF) == 8){
-    currLm <- lm(variance ~ species + subtype, data = tmpDF) 
-    genelmDF$intercept <- currLm$coefficients[[1]]
-    genelmDF$rhesus
-    genelmDF$mouse
+  if(nrow(currGeneDF) == 6){
+    lmList[[currGene]] <- lm(variance ~ species + subtype, data = currGeneDF)
   }else{
     next
   }
 }
 
-### Take parameters from each linear model and put them in a dataframe
-varBySpec_lm$coefficients[1]
+testList <- list()
+testList[[currGene]] <- lm(variance ~ species + subtype, data = currGeneDF)
