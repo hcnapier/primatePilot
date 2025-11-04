@@ -677,7 +677,37 @@ for(currMatName in names(indvCountMatList)){
 }
 
 indvVarDF <- indvVarDF %>% na.omit()
+indvVarDF$species <- as.factor(indvVarDF$species)
+indvVarDF$subtype <- as.factor(indvVarDF$subtype)
 
-## 9.3 Linear model ----
+## 9.3 Linear model for all genes ----
 varBySpecSub_lm <- lm(variance ~ species + subtype, data = indvVarDF)
 summary(varBySpecSub_lm)
+sigma(varBySpecSub_lm)/mean(indvVarDF$variance)
+
+varBySpec_lm <- lm(variance ~ species, data = indvVarDF)
+summary(varBySpec_lm)
+sigma(varBySpec_lm)/mean(indvVarDF$variance)
+
+varBySub_lm <- lm(variance ~ subtype, data = indvVarDF)
+summary(varBySub_lm)
+sigma(varBySub_lm)/mean(indvVarDF$variance)
+
+## 9.4 Linear model for every gene individually ----
+lmList <- list()
+for(currGene in unique(indvVarDF$gene)){
+  print(currGene)
+  tmpDF <- indvVarDF %>%
+    filter(gene == currGene)
+  if(nrow(tmpDF) == 8){
+    currLm <- lm(variance ~ species + subtype, data = tmpDF) 
+    genelmDF$intercept <- currLm$coefficients[[1]]
+    genelmDF$rhesus
+    genelmDF$mouse
+  }else{
+    next
+  }
+}
+
+### Take parameters from each linear model and put them in a dataframe
+varBySpec_lm$coefficients[1]
