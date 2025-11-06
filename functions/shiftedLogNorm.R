@@ -8,7 +8,7 @@ require(dplyr)
 
 source("~/Work/VertGenLab/Projects/zebrinEvolution/Code/primatePilot/functions/removeZeroRowsCols.R")
 
-shiftedLogNorm <- function(countMat, pseudocount = 1, useForL = "meanReadDepth"){
+shiftedLogNorm <- function(countMat, pseudocount = 1, useForL = "meanReadDepth", removeLowCounts = F, lowCountThreshold){
   if(!is.matrix(countMat)){
     stop("countMat must by of type matrix")
   }
@@ -22,11 +22,19 @@ shiftedLogNorm <- function(countMat, pseudocount = 1, useForL = "meanReadDepth")
   }else if(is.numeric(useForL)){
     L = useForL
   }else{
-    stop("Please input a valid option to useForL")
+    stop("Please input a numeric option to useForL")
   }
   s = s/L
-  scaledMat = log((countMat/s) + pseudocount)
-  meanRawReadDepth = countMat %>% colSums() %>% mean()
-  print(paste("mean raw read depth = ", meanRawReadDepth))
+  if(removeLowCounts){
+    if(is.numeric(lowCountThreshold)){
+      tmpScaledMat <- countMat/s
+      tmpScaledMat <- tmpScaledMat[which(rowMeans(tmpScaledMat) > lowCountThreshold),]
+      scaledMat = log(tmpScaledMat + pseudocount)
+    }else{
+      stop("Please input a numeric option to lowCountThreshold")
+    }
+  }else{
+    scaledMat = log((countMat/s) + pseudocount)
+  }
   return(scaledMat)
 }
