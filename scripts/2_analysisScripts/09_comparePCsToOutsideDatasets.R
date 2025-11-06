@@ -32,41 +32,20 @@ allPrimateOrthologs %>%
   filter(gene.name != "") %>%
   distinct() -> allPrimateOrthologs
 allPrimateOrthologs$gene...gc.content <- NULL
-allPrimateOrthologs$gene.size <- allPrimateOrthologs$gene.end..bp. - allPrimateOrthologs$gene.start..bp.
-allPrimateOrthologs$macaque.gene.size <- allPrimateOrthologs$macaque.chromosome.scaffold.end..bp. - allPrimateOrthologs$macaque.chromosome.scaffold.start..bp.
-allPrimateOrthologs$mouse.gene.size <- allPrimateOrthologs$mouse.chromosome.scaffold.end..bp. - allPrimateOrthologs$mouse.chromosome.scaffold.start..bp.
-allPrimateOrthologs$white.tufted.ear.marmoset.gene.size <- allPrimateOrthologs$white.tufted.ear.marmoset.chromosome.scaffold.end..bp. - allPrimateOrthologs$white.tufted.ear.marmoset.chromosome.scaffold.start..bp.
 
 ## 0.3 Setup primate pilot data ----
 setwd("~/Work/VertGenLab/Projects/zebrinEvolution/Code/primatePilot/data/seuratObjs")
 noGarbage <- readRDS("speciesObjList_cleanCellTypeLabled.rds")
 humanPCs_merged <- readRDS("humanPCsMerged.rds")
-setwd("~/Work/VertGenLab/Projects/zebrinEvolution/Code/primatePilot/data/")
-pseudobulkMerged <- readRDS("pseudobulkMerged.rds")
-pseudobulkMerged %>% 
-  as.data.frame() %>%
-  select(contains("Purkinje")) -> pseudobulkMerged_pcs
-names(pseudobulkMerged_pcs) <- paste(names(pseudobulkMerged_pcs), "Napier", sep = "_")
-pseudobulkMerged_pcs <- pseudobulkMerged_pcs[rowSums(pseudobulkMerged_pcs[, -1])>0, ]
-rm(pseudobulkMerged)
-pseudobulkMerged_pcs$gene.name <- rownames(pseudobulkMerged_pcs)
 
 ## 0.4 Setup Hao rhesus data ----
 # load data 
 setwd("~/Work/VertGenLab/Projects/zebrinEvolution/Code/haoReanalysis/data/seuratObjs")
 haoRhesus <- readRDS("macaqueSingleCellPC.rds")
-# pseudobulk
-pseudobulk_haoRhesus <- pseudobulkHumanOrtholog(haoRhesus, 
-                                                groupByIdent = "doublet_info", 
-                                                orthologDF = allPrimateOrthologs, 
-                                                species = "macaque", 
-                                                datasetID = "Purkinje_rhesus_Hao")
 # get count matrix in terms of human orthologs
 countMat_haoRhesus_pc <- getOrthologCountMat(haoRhesus,
                                              allPrimateOrthologs, 
-                                             "macaque", 
-                                             normMethod = "shiftedLog", 
-                                             useForL = 7208)
+                                             "macaque")
 rm(haoRhesus)
 countMat_haoRhesus_pc %>% colSums() %>% hist(main = "Hao Rhesus", xlab = "Read counts per cell", breaks = 14)
 countMat_haoRhesus_pc %>% colSums() %>% mean()
@@ -78,47 +57,12 @@ barteltMousePCs <- subset(barteltMouse, idents = "Purkinje cells")
 Idents(barteltMousePCs) <- "Type"
 barteltMousePCs <- subset(barteltMousePCs, idents = "WT")
 rm(barteltMouse)
-# pseudobulk
-pseudobulk_barteltMousePCs <- pseudobulkHumanOrtholog(barteltMousePCs, 
-                                                      groupByIdent = "Type", 
-                                                      orthologDF = allPrimateOrthologs, 
-                                                      species = "mouse", 
-                                                      datasetID = "Purkinje_mouse_Bartelt")
 # get count matrix in terms of human orthologs
 countMat_barteltMouse_pc <- getOrthologCountMat(barteltMousePCs,
                                                 allPrimateOrthologs, 
-                                                "mouse", 
-                                                normMethod = "shiftedLog", 
-                                                useForL = 7208)
+                                                "mouse")
 countMat_barteltMouse_pc %>% colSums() %>% hist(main = "Bartelt Mouse", xlab = "Read counts per cell", breaks = 14)
 countMat_barteltMouse_pc %>% colSums() %>% mean()
-
-## 0.6 Merge all pseudobulked DFs into one matrix ----
-pseudobulkMerged_pcs <- inner_join(pseudobulkMerged_pcs, pseudobulk_haoRhesus)
-pseudobulkMerged_pcs <- inner_join(pseudobulkMerged_pcs, pseudobulk_haoMarmoset)
-pseudobulkMerged_pcs <- inner_join(pseudobulkMerged_pcs, pseudobulk_haoMarmoset_clean)
-pseudobulkMerged_pcs <- inner_join(pseudobulkMerged_pcs, pseudobulk_barteltMousePCs)
-rownames(pseudobulkMerged_pcs) <- pseudobulkMerged_pcs$gene.name
-pseudobulkMerged_pcs$gene.name <- NULL
-pseudobulkMerged_pcs %>% as.matrix() -> pseudobulkMerged_pcs
-rm(pseudobulk_haoRhesus)
-rm(pseudobulk_haoMarmoset)
-rm(pseudobulk_haoMarmoset_clean)
-rm(pseudobulk_barteltMousePCs)
-
-# 1.0 Pairwise Pearson correlations ----
-crossDatasetPCCormat <- cor(pseudobulkMerged_pcs)
-melted_crossDatasetPCCormat <- melt(crossDatasetPCCormat)
-crossDatasetPC_corPlot <- ggplot(data = melted_crossDatasetPCCormat, aes(Var1, Var2, fill = value))+
-  geom_tile(color = "white")+
-  scale_fill_gradient2(low = "blue", high = "red", mid = "white", 
-                       midpoint = 0.5, limit = c(0,1), space = "Lab", 
-                       name="Pearson\nCorrelation") +
-  theme_minimal()+ 
-  theme(axis.text.x = element_text(angle = 90, vjust = 1, 
-                                   size = 10, hjust = 1))+
-  coord_fixed()
-crossDatasetPC_corPlot
 
 
 # 2.0 Dynamic range all PCs ----
@@ -176,10 +120,6 @@ dnr_AllPCs_AcrossSpecies <- getDNR(mergedMats)
 range(dnr_AllPCs_AcrossSpecies$dnr, na.rm = T)
 hist(dnr_AllPCs_AcrossSpecies$dnr)
 
-# Pseudobulked
-#pseudobulkAllPCs_dnr <- getDNR(pseudobulkMerged_pcs)
-#hist(pseudobulkAllPCs_dnr$dnr)
-
 
 # 3.0 DNR PC subtypes ----
 ## 3.1 ID subtypes ----
@@ -198,15 +138,6 @@ FeaturePlot(barteltMousePCs, features = c("Grid2", "Plcb4", "Aldoc"))
 VlnPlot(barteltMousePCs, features = c("Grid2", "Plcb4", "Aldoc"))
 barteltMousePCs_zPos <- barteltMousePCs %>% subset(idents = c(3))
 barteltMousePCs_zNeg <- barteltMousePCs %>% subset(idents = c(0,2,5))
-pseudobulk_bartelt_zPos <- pseudobulkHumanOrtholog(barteltMousePCs_zPos, 
-                                                   orthologDF = allPrimateOrthologs, 
-                                                   species = "mouse", 
-                                                   datasetID = "barteltMouseZPos")
-pseudobulk_bartelt_zNeg <- pseudobulkHumanOrtholog(barteltMousePCs_zNeg, 
-                                                   orthologDF = allPrimateOrthologs, 
-                                                   species = "mouse", 
-                                                   datasetID = "barteltMouseZNeg", 
-                                                   groupByIdent = "Type")
 
 # Hao rhesus
 setwd("~/Work/VertGenLab/Projects/zebrinEvolution/Code/haoReanalysis/data/seuratObjs")
@@ -216,33 +147,14 @@ haoRhesus_zPos <- haoRhesus %>%
 haoRhesus_zNeg <- haoRhesus %>% 
   subset(idents = c(1))
 rm(haoRhesus)
-pseudobulk_haoRhesus_zNeg <- pseudobulkHumanOrtholog(haoRhesus_zNeg, 
-                                                     orthologDF = allPrimateOrthologs, 
-                                                     species = "macaque", 
-                                                     datasetID = "haoRhesusZNeg", 
-                                                     groupByIdent = "doublet_info")
-pseudobulk_haoRhesus_zPos <- pseudobulkHumanOrtholog(haoRhesus_zPos, 
-                                                     orthologDF = allPrimateOrthologs, 
-                                                     species = "macaque", 
-                                                     datasetID = "haoRhesusZPos", 
-                                                     groupByIdent = "doublet_info")
+
 # Pilot human
 humanPCs_zPos <- humanPCs_merged %>%
   subset(idents = 1)
-pseudobulk_humanPCs_zPos <- AggregateExpression(humanPCs_zPos, return.seurat = F)
-pseudobulk_humanPCs_zPos <- pseudobulk_humanPCs_zPos$RNA %>% as.matrix() %>% as.data.frame()
-pseudobulk_humanPCs_zPos$gene.name <- rownames(pseudobulk_humanPCs_zPos)
-rownames(pseudobulk_humanPCs_zPos) <- NULL
-names(pseudobulk_humanPCs_zPos)[1] <- "pilotHumanZPos"
-pseudobulk_humanPCs_zPos$pilotHumanZPos <- pseudobulk_humanPCs_zPos$pilotHumanZPos %>% as.numeric()
+
 humanPCs_zNeg <- humanPCs_merged %>% 
   subset(idents = 0)
-pseudobulk_humanPCs_zNeg <- AggregateExpression(humanPCs_zNeg)
-pseudobulk_humanPCs_zNeg <- pseudobulk_humanPCs_zNeg$RNA %>% as.matrix() %>% as.data.frame()
-pseudobulk_humanPCs_zNeg$gene.name <- rownames(pseudobulk_humanPCs_zNeg) 
-rownames(pseudobulk_humanPCs_zNeg) <- NULL
-names(pseudobulk_humanPCs_zNeg)[1] <- "pilotHumanZNeg"
-pseudobulk_humanPCs_zNeg$pilotHumanZNeg <- pseudobulk_humanPCs_zNeg$pilotHumanZNeg %>% as.numeric()
+
 # Pilot mouse
 Idents(mousePCs) <- "seurat_clusters"
 mousePCs <- mousePCs %>%
@@ -257,75 +169,11 @@ mousePCs_zPos <- mousePCs %>%
   subset(idents = 3)
 mousePCs_zNeg <- mousePCs %>%
   subset(idents = c(2))
-pseudobulk_pilotMousePCs_zPos <- pseudobulkHumanOrtholog(mousePCs_zPos, 
-                                                         orthologDF = allPrimateOrthologs, 
-                                                         species = "mouse", 
-                                                         datasetID = "pilotMouseZPos")
-pseudobulk_pilotMousePCs_zNeg <- pseudobulkHumanOrtholog(mousePCs_zNeg, 
-                                                         orthologDF = allPrimateOrthologs, 
-                                                         species = "mouse", 
-                                                         datasetID = "pilotMouseZNeg")
-### 3.1.2 Merge ----
-# Z-
-pseudobulk_zNeg <- inner_join(pseudobulk_bartelt_zNeg, pseudobulk_haoRhesus_zNeg)
-pseudobulk_zNeg <- inner_join(pseudobulk_zNeg, pseudobulk_pilotMousePCs_zNeg)
-pseudobulk_zNeg <- inner_join(pseudobulk_zNeg, pseudobulk_humanPCs_zNeg)
-
-# Z+ 
-pseudobulk_zPos <- inner_join(pseudobulk_bartelt_zPos, pseudobulk_haoRhesus_zPos)
-pseudobulk_zPos <- inner_join(pseudobulk_zPos, pseudobulk_pilotMousePCs_zPos)
-pseudobulk_zPos <- inner_join(pseudobulk_zPos, pseudobulk_humanPCs_zPos)
-
-# All PCs, separated by subtype
-pseudobulk_PCSubtypes <- inner_join(pseudobulk_zPos, pseudobulk_zNeg)
-
-# Finish matrix construction
-rownames(pseudobulk_zPos) <- pseudobulk_zPos$gene.name
-pseudobulk_zPos$gene.name <- NULL
-pseudobulk_zPos <- pseudobulk_zPos %>% as.matrix()
-rownames(pseudobulk_zNeg) <- pseudobulk_zNeg$gene.name
-pseudobulk_zNeg$gene.name <- NULL
-pseudobulk_zNeg <- pseudobulk_zNeg %>% as.matrix()
-rownames(pseudobulk_PCSubtypes) <- pseudobulk_PCSubtypes$gene.name
-pseudobulk_PCSubtypes$gene.name <- NULL
-#names <- pseudobulk_PCSubtypes %>% colnames() %>% sort()
-#pseudobulk_PCSubtypes <- pseudobulk_PCSubtypes[,names]
-pseudobulk_PCSubtypes <- pseudobulk_PCSubtypes %>% as.matrix()
-
-## 3.2 Compare PC subtypes ----
-# Pearson correlation to compare similarity of PC subtypes
-### 3.2.1 Z+ ----
-zPosCorMat <- cor(pseudobulk_zPos)
-melted_zPosCorMat <- melt(zPosCorMat)
-zPos_corPlot <- ggplot(data = melted_zPosCorMat, aes(Var1, Var2, fill = value))+
-  geom_tile(color = "white")+
-  scale_fill_gradient2(low = "blue", high = "red", mid = "white", 
-                       midpoint = 0.5, limit = c(0,1), space = "Lab", 
-                       name="Pearson\nCorrelation") +
-  theme_minimal()+ 
-  theme(axis.text.x = element_text(angle = 90, vjust = 1, 
-                                   size = 10, hjust = 1))+
-  coord_fixed()
-zPos_corPlot
-
-### 3.2.2 All PCs, separated by subtype ----
-pcSubtypeCorMat <- cor(pseudobulk_PCSubtypes)
-melted_pcSubtypeCorMat <- melt(pcSubtypeCorMat)
-pcSubtype_corPlot <- ggplot(data = melted_pcSubtypeCorMat, aes(Var1, Var2, fill = value))+
-  geom_tile(color = "white")+
-  scale_fill_gradient2(low = "blue", high = "red", mid = "white", 
-                       midpoint = 0.5, limit = c(0,1), space = "Lab", 
-                       name="Pearson\nCorrelation") +
-  theme_minimal()+ 
-  theme(axis.text.x = element_text(angle = 90, vjust = 1, 
-                                   size = 10, hjust = 1))+
-  coord_fixed()
-pcSubtype_corPlot 
 
 ## 3.3 DNR Z+ ----
 ### 3.3.1 Get single cell count matrices
-human1PCs_zPos_countMat <- humanPCs_zPos@assays$RNA$counts.1 %>% as.matrix() %>% shiftedLogNorm(pseudocount = 1, useForL = 6687)
-human2PCs_zPos_countMat <- humanPCs_zPos@assays$RNA$counts.2 %>% as.matrix() %>% shiftedLogNorm(pseudocount = 1, useForL = 6687)
+human1PCs_zPos_countMat <- humanPCs_zPos@assays$RNA$counts.1 %>% as.matrix() %>% shiftedLogNorm(pseudocount = 1, removeLowCounts = T, lowCountThreshold = 0.5)
+human2PCs_zPos_countMat <- humanPCs_zPos@assays$RNA$counts.2 %>% as.matrix() %>% shiftedLogNorm(pseudocount = 1)
 humanPCs_zPos_countMat <- mergeCountMats(list(human1PCs_zPos_countMat, human2PCs_zPos_countMat)) 
 humanPCs_zPos_countMat %>% colSums() %>% hist(main = "Human Z+ PCs", xlab = "Read counts per cell")
 haoRhesus_zPos_countMat <- getOrthologCountMat(haoRhesus_zPos, 
