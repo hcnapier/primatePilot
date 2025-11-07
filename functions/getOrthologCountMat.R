@@ -10,7 +10,7 @@ require(dplyr)
 source("~/Work/VertGenLab/Projects/zebrinEvolution/Code/primatePilot/functions/TPMNormalize.R")
 source("~/Work/VertGenLab/Projects/zebrinEvolution/Code/primatePilot/functions/shiftedLogNorm.R")
 
-getOrthologCountMat <- function(obj, orthologDF, species, normMethod = c("tpm", "shiftedLog", ""), useForL = "meanReadDepth"){
+getOrthologCountMat <- function(obj, orthologDF, species, normMethod = c("tpm", "shiftedLog", ""), useForL = "meanReadDepth", removeLowCounts = F, lowCountThreshold){
   countMat <- obj@assays$RNA$counts # Extract raw count matrix
   speciesGeneName <- paste(species, "gene.name", sep = ".")
   if(normMethod != ""){
@@ -21,7 +21,7 @@ getOrthologCountMat <- function(obj, orthologDF, species, normMethod = c("tpm", 
         dplyr::select(all_of(speciesColumns))
       countMat <- TPMNormalize(countMat, geneSizeDF)
     }else if(normMethod == "shiftedLog"){
-      countMat <- shiftedLogNorm(countMat, pseudocount = 1, useForL = useForL)
+      countMat <- shiftedLogNorm(countMat, pseudocount = 1, useForL = useForL, removeLowCounts = removeLowCounts, lowCountThreshold = lowCountThreshold)
     }
   }
   countMat %>% as.data.frame() -> countMat
