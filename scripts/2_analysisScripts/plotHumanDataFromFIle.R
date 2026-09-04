@@ -90,3 +90,23 @@ DotPlot(noGarbage[['human2']], features = unique(top3NoGarbage[['human2']]$gene)
   theme(axis.text.x = element_text(size = 7, angle = 45, vjust = 1, hjust = 1))
 
 top3NoGarbage[['human2']] %>% print(n = 50)
+
+# Get all human PC barcodes 
+humanPCs_merged %>% colnames() -> humanPCBXs
+setwd("~/Work/VertGenLab/Projects/zebrinEvolution/Code/primatePilot/data")
+write.table(humanPCBXs, "humanPCBXs.txt", sep = ",", row.names = F, col.names = F, quote = F)
+
+# Get human 1 PC barcodes 
+human1PCs %>% colnames() -> human1PCBXs
+setwd("~/Work/VertGenLab/Projects/zebrinEvolution/Code/primatePilot/data")
+write.table(human1PCBXs, "human1PCBXs.txt", sep = ",", row.names = F, col.names = F, quote = F)
+
+# Get human 2 PC barcodes
+human2PCs %>% colnames() -> human2PCBXs
+setwd("~/Work/VertGenLab/Projects/zebrinEvolution/Code/primatePilot/data")
+write.table(human2PCBXs, "human2PCBXs.txt", sep = ",", row.names = F, col.names = F, quote = F)
+
+# Get rheus PC barcodes
+rhesusPCs %>% colnames() -> rhesusPCBXs
+setwd("~/Work/VertGenLab/Projects/zebrinEvolution/Code/primatePilot/data")
+write.table(rhesusPCBXs, "rhesusPCBXs.txt", sep = ",", row.names = F, col.names = F, quote = F)
